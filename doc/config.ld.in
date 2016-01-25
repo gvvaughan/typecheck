@@ -1,0 +1,29 @@
+-- -*- lua -*-
+title		= "typecheck @PACKAGE_VERSION@ Reference"
+project		= "typecheck @PACKAGE_VERSION@"
+description	= [[
+# Gradual Function Argument Type Checking
+
+A Luaish run-time gradual type checking system, for argument and return
+types at function boundaries with simple annotations that can be disabled
+in production code.  Its API and type mismatch errors are modelled on the
+core Lua C-language `argcheck ()` API.
+
+This is a light-weight library for Lua 5.1 (including LuaJIT), 5.2
+and 5.3 written in pure Lua.
+
+## LICENSE
+
+The code is copyright by its author, and released under the MIT
+license (the same license as Lua itself).  There is no warranty.
+]]
+
+dir		= "."
+
+file		= "../typecheck.lua"
+
+format		= "markdown"
+
+sort		= false
+
+backtick_references = false
