@@ -1,5 +1,5 @@
 --[[--
- Type checking facilities for Lua functions.
+ Gradual type checking for Lua functions.
 
  The behaviour of the functions in this module are controlled by the value
  of the global `_DEBUG`.  Not setting `_DEBUG` prior to loading this module

@@ -1,5 +1,5 @@
-Gradual function type checking
-==============================
+Gradual type checking for Lua functions
+=======================================
 
 Copyright (C) 2014-2016 [Gary V. Vaughan][github]
 

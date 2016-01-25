@@ -2,7 +2,7 @@ package = "typecheck"
 version = "1.0-1"
 
 description = {
-  summary = "Gradual function call type checking",
+  summary = "Gradual type checking for Lua functions.",
   detailed = [[
     A Luaish run-time gradual type checking system, for argument and
     return types at function boundaries with simple annotations that can
