@@ -15,6 +15,9 @@ local LUA = os.getenv "LUA" or "lua"
 function nop () end
 
 
+local unpack = table.unpack or unpack
+
+
 -- In case we're not using a bleeding edge release of Specl...
 badargs.result = badargs.result or function (fname, i, want, got)
   if want == nil then i, want =  i - 1, i end -- numbers only for narg error
@@ -71,7 +74,7 @@ end
 function luaproc (code, arg, stdin)
   local f = mkscript (code)
   if type (arg) ~= "table" then arg = {arg} end
-  local cmd = {LUA, f, unpack (arg)}
+  local cmd = {LUA, f, unpack (arg, 1, #arg)}
   -- inject env and stdin keys separately to avoid truncating `...` in
   -- cmd constructor
   cmd.env = { LUA_PATH=package.path, LUA_INIT="", LUA_INIT_5_2="" }
