@@ -658,8 +658,11 @@ if _DEBUG.argcheck then
       diagnose (argt, input)
 
       -- Propagate outer environment to inner function.
-      local x = math_max -- ??? FIXME: getfenv(1) fails if we remove this ???
-      setfenv (inner, getfenv (1))
+      if type (inner) == "table" then
+	setfenv ((getmetatable (inner) or {}).__call, getfenv (1))
+      else
+        setfenv (inner, getfenv (1))
+      end
 
       -- Execute.
       local results = table_pack (inner (...))
