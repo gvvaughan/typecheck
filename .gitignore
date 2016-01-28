@@ -1,3 +1,4 @@
 .DS_Store
-/doc/config.ld
+/doc/*
+!/doc/config.ld.in
 /typecheck-*.src.rock
