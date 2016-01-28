@@ -1,5 +1,5 @@
 package = "typecheck"
-version = "1.0-1"
+version = "git-1"
 
 description = {
   summary = "Gradual type checking for Lua functions.",
