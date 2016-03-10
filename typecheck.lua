@@ -74,16 +74,16 @@ do
     local function choose (t)
       for k, v in pairs (t) do
         if _DEBUG == false then
-	  t[k] = v.fast
+          t[k] = v.fast
         elseif _DEBUG == nil then
           t[k] = v.default
         elseif type (_DEBUG) ~= "table" then
-	  t[k] = v.safe
+          t[k] = v.safe
         elseif _DEBUG[k] ~= nil then
           t[k] = _DEBUG[k]
         else
           t[k] = v.default
-	end
+        end
       end
     end
 
@@ -322,9 +322,9 @@ local function extramsg_mismatch (expectedtypes, actual, index)
                   gsub ("#list", "non-empty list"):
                   gsub ("(%S+ of [^,%s]-)s? ", "%1s "):
                   gsub ("(%S+ of [^,%s]-)s?,", "%1s,"):
-		  gsub ("(s, [^,%s]-)s? ", "%1s "):
-		  gsub ("(s, [^,%s]-)s?,", "%1s,"):
-		  gsub ("(of .-)s? or ([^,%s]-)s? ", "%1s or %2s ")
+                  gsub ("(s, [^,%s]-)s? ", "%1s "):
+                  gsub ("(s, [^,%s]-)s?,", "%1s,"):
+                  gsub ("(of .-)s? or ([^,%s]-)s? ", "%1s or %2s ")
   end
 
   return expectedstr .. ", got " .. actualtype
@@ -354,7 +354,7 @@ local function permute (t)
     if optional == nil then
       -- Append non-optional type-spec to each permutation.
       for b = 1, #p do
-	table_insert (p[b], markdots (p[b], v))
+        table_insert (p[b], markdots (p[b], v))
       end
     else
       -- Duplicate all existing permutations, and add optional type-spec
@@ -404,7 +404,7 @@ local function projectuniq (fkey, tt)
   for _, e in ipairs (t) do
     for _, v in ipairs (typesplit (e)) do
       if s[v] == nil then
-	r[#r + 1], s[v] = v, true
+        r[#r + 1], s[v] = v, true
       end
     end
   end
@@ -489,7 +489,7 @@ if _DEBUG.argcheck then
         local len, count = len (actual), 0
         local i = next (actual)
         repeat
-	  if i ~= nil then count = count + 1 end
+          if i ~= nil then count = count + 1 end
           i = next (actual, i)
         until i == nil or count > len
         if count == len and (check == "list" or count > 0) then
@@ -532,9 +532,9 @@ if _DEBUG.argcheck then
       -- Report an error for all possible types at bestmismatch index.
       local i, expected = bestmismatch
       if t.dots and i > #t then
-	expected = typesplit (t[#t])
+        expected = typesplit (t[#t])
       else
-	expected = projectuniq (i, permutations)
+        expected = projectuniq (i, permutations)
       end
 
       -- This relies on the `permute()` algorithm leaving the longest
@@ -543,14 +543,14 @@ if _DEBUG.argcheck then
 
       -- For "container of things", check all elements are a thing too.
       if typelist[i] then
-	local check, contents = string_match (typelist[i], "^(%S+) of (%S-)s?$")
-	if contents and type (valuelist[i]) == "table" then
-	  for k, v in pairs (valuelist[i]) do
-	    if not checktype (contents, v) then
-	      argt.badtype (i, extramsg_mismatch (expected, v, k), 3)
-	    end
-	  end
-	end
+        local check, contents = string_match (typelist[i], "^(%S+) of (%S-)s?$")
+        if contents and type (valuelist[i]) == "table" then
+          for k, v in pairs (valuelist[i]) do
+            if not checktype (contents, v) then
+              argt.badtype (i, extramsg_mismatch (expected, v, k), 3)
+            end
+          end
+        end
       end
 
       -- Otherwise the argument type itself was mismatched.
@@ -614,9 +614,9 @@ if _DEBUG.argcheck then
     local input, output = {
       bad          = "argument",
       badtype      = function (i, extramsg, level)
-		       level = level or 1
-		       argerror (fname, i, extramsg, level + 1)
-		     end,
+                       level = level or 1
+                       argerror (fname, i, extramsg, level + 1)
+                     end,
       permutations = permute (argtypes),
     }
 
@@ -625,11 +625,11 @@ if _DEBUG.argcheck then
     if returntypes then
       local i, permutations = 0, {}
       for _, group in ipairs (split (returntypes, "%s+or%s+")) do
-	returntypes = split (group, ",%s*")
-	for _, t in ipairs (permute (returntypes)) do
-	  i = i + 1
+        returntypes = split (group, ",%s*")
+        for _, t in ipairs (permute (returntypes)) do
+          i = i + 1
           permutations[i] = t
-	end
+        end
       end
 
       -- Ensure the longest permutation is first in the list.
@@ -638,9 +638,9 @@ if _DEBUG.argcheck then
       output = {
         bad          = "result",
         badtype      = function (i, extramsg, level)
-		         level = level or 1
-		         resulterror (fname, i, extramsg, level + 1)
-		       end,
+                         level = level or 1
+                         resulterror (fname, i, extramsg, level + 1)
+                       end,
         permutations = permutations,
       }
     end
@@ -650,8 +650,8 @@ if _DEBUG.argcheck then
 
       -- Don't check type of self if fname has a ':' in it.
       if string_find (fname, ":") then
-	table_remove (argt, 1)
-	argt.n = argt.n - 1
+        table_remove (argt, 1)
+        argt.n = argt.n - 1
       end
 
       -- Diagnose bad inputs.
@@ -659,7 +659,7 @@ if _DEBUG.argcheck then
 
       -- Propagate outer environment to inner function.
       if type (inner) == "table" then
-	setfenv ((getmetatable (inner) or {}).__call, getfenv (1))
+        setfenv ((getmetatable (inner) or {}).__call, getfenv (1))
       else
         setfenv (inner, getfenv (1))
       end
@@ -669,7 +669,7 @@ if _DEBUG.argcheck then
 
       -- Diagnose bad outputs.
       if returntypes then
-	diagnose (results, output)
+        diagnose (results, output)
       end
 
       return table_unpack (results, 1, results.n)
@@ -855,7 +855,7 @@ return {
   --- Constants.
   -- @section constants
 
-  --- The release version of optparse.
+  --- The release version of typecheck.
   -- @string _VERSION
   _VERSION = "1.0",
 }

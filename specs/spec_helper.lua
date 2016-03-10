@@ -30,15 +30,15 @@ badargs.result = badargs.result or function (fname, i, want, got)
   local function showarg (s)
     return ("|" .. s .. "|"):
              gsub ("|%?", "|nil|"):
-	     gsub ("|nil|", "|no value|"):
+             gsub ("|nil|", "|no value|"):
              gsub ("|any|", "|any value|"):
              gsub ("|#", "|non-empty "):
-	     gsub ("|func|", "|function|"):
-	     gsub ("|file|", "|FILE*|"):
-	     gsub ("^|", ""):
-	     gsub ("|$", ""):
-	     gsub ("|([^|]+)$", "or %1"):
-	     gsub ("|", ", ")
+             gsub ("|func|", "|function|"):
+             gsub ("|file|", "|FILE*|"):
+             gsub ("^|", ""):
+             gsub ("|$", ""):
+             gsub ("|([^|]+)$", "or %1"):
+             gsub ("|", ", ")
   end
 
   return string.format ("bad result #%d from '%s' (%s expected, got %s)",
