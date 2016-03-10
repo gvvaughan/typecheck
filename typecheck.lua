@@ -855,7 +855,7 @@ return {
   --- Constants.
   -- @section constants
 
-  --- The release version of optparse.
+  --- The release version of typecheck.
   -- @string _VERSION
   _VERSION = "1.0",
 }
