@@ -77,6 +77,16 @@ the return or argument types do not meet your specification:
       ...
 ```
 
+Alternatively, argscheck can be used as an annotation, which makes it
+look nicer when used at declaration time:
+
+```lua
+    local my_function = argscheck "my_function (int, int) => int" ..
+    function (a, b)
+      return a + b
+    end
+```
+
 By default, type checks are performed on every call.  But, they can be
 turned off and all of the run-time overhead eliminated in production
 code, either by setting the global `_DEBUG = false` prior to loading

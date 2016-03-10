@@ -645,34 +645,46 @@ if _DEBUG.argcheck then
       }
     end
 
-    return function (...)
-      local argt = table_pack (...)
+    local wrap_function = function(my_inner)
+      return function (...)
+        local argt = table_pack (...)
 
-      -- Don't check type of self if fname has a ':' in it.
-      if string_find (fname, ":") then
-        table_remove (argt, 1)
-        argt.n = argt.n - 1
+        -- Don't check type of self if fname has a ':' in it.
+        if string_find (fname, ":") then
+          table_remove (argt, 1)
+          argt.n = argt.n - 1
+        end
+
+        -- Diagnose bad inputs.
+        diagnose (argt, input)
+
+        -- Propagate outer environment to inner function.
+        if type (my_inner) == "table" then
+          setfenv ((getmetatable (my_inner) or {}).__call, getfenv (1))
+        else
+          setfenv (my_inner, getfenv (1))
+        end
+
+        -- Execute.
+        local results = table_pack (my_inner (...))
+
+        -- Diagnose bad outputs.
+        if returntypes then
+          diagnose (results, output)
+        end
+
+        return table_unpack (results, 1, results.n)
       end
+    end
 
-      -- Diagnose bad inputs.
-      diagnose (argt, input)
-
-      -- Propagate outer environment to inner function.
-      if type (inner) == "table" then
-        setfenv ((getmetatable (inner) or {}).__call, getfenv (1))
-      else
-        setfenv (inner, getfenv (1))
-      end
-
-      -- Execute.
-      local results = table_pack (inner (...))
-
-      -- Diagnose bad outputs.
-      if returntypes then
-        diagnose (results, output)
-      end
-
-      return table_unpack (results, 1, results.n)
+    if inner then
+      return wrap_function(inner)
+    else
+      return setmetatable({}, {
+        __concat = function(_, concat_inner)
+          return wrap_function(concat_inner)
+        end
+      })
     end
   end
 
@@ -682,7 +694,17 @@ else
   -- a false valued `argcheck` field.
 
   argcheck  = function (...) return ... end
-  argscheck = function (decl, inner) return inner end
+  argscheck = function (decl, inner)
+    if inner then
+      return inner
+    else
+      return setmetatable({}, {
+        __concat = function(_, concat_inner)
+          return concat_inner
+        end
+      })
+    end
+  end
 
 end
 
@@ -790,6 +812,12 @@ return {
   --   function (with, branches)
   --     ...
   -- end)
+  --
+  -- -- Alternatively, as an annotation:
+  -- local case = argscheck "std.functional.case (?any, #table) => [any...]" ..
+  -- function (with, branches)
+  --   ...
+  -- end
   argscheck = argscheck,
 
   --- Format a type mismatch error.
