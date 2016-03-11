@@ -447,6 +447,22 @@ specify typecheck:
       ]]
       expect (luaproc (script)).to_succeed ()
 
+  - context used as an annotation:
+    - before:
+        wrapped = f "mkmagic ()" .. mkmagic
+    - it returns the wrapped function:
+        expect (wrapped).not_to_be (mkmagic)
+        expect (wrapped ()).to_be "MAGIC"
+    - it does not wrap the function when _ARGCHECK is disabled: |
+        script = [[
+          _DEBUG = false
+          local argscheck = require "typecheck".argscheck
+          local function inner () return "MAGIC" end
+          local wrapped = argscheck "inner (?any)" .. inner
+          os.exit (wrapped == inner and 0 or 1)
+        ]]
+        expect (luaproc (script)).to_succeed ()
+
   - context when checking zero argument function:
     - it diagnoses too many arguments:
         expect (wrapped (false)).to_raise (badarg (1))
