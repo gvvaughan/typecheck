@@ -148,7 +148,7 @@ end
 
 
 -- Respect __pairs method, even in Lua 5.1.
-if not pairs(setmetatable({},{__pairs=function() return false end})) then
+if not pairs (setmetatable ({}, {__pairs = function () return false end })) then
   local _pairs = pairs
   pairs = function (t)
     return (getmetamethod (t, "__pairs") or _pairs) (t)
@@ -166,7 +166,7 @@ end
 -- less than the index of the first nil value in table x.
 local function len (x)
   local m = getmetamethod (x, "__len")
-  if m then return m(x) end
+  if m then return m (x) end
   if type (x) ~= "table" then return #x end
 
   local n = #x
@@ -645,7 +645,7 @@ if _DEBUG.argcheck then
       }
     end
 
-    local wrap_function = function(my_inner)
+    local wrap_function = function (my_inner)
       return function (...)
         local argt = table_pack (...)
 
@@ -678,11 +678,11 @@ if _DEBUG.argcheck then
     end
 
     if inner then
-      return wrap_function(inner)
+      return wrap_function (inner)
     else
-      return setmetatable({}, {
-        __concat = function(_, concat_inner)
-          return wrap_function(concat_inner)
+      return setmetatable ({}, {
+        __concat = function (_, concat_inner)
+          return wrap_function (concat_inner)
         end
       })
     end
@@ -698,8 +698,8 @@ else
     if inner then
       return inner
     else
-      return setmetatable({}, {
-        __concat = function(_, concat_inner)
+      return setmetatable ({}, {
+        __concat = function (_, concat_inner)
           return concat_inner
         end
       })
