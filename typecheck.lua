@@ -304,7 +304,7 @@ local function extramsg_mismatch (expectedtypes, actual, index)
 end
 
 
---- Compare *check* against type of *actual*
+--- Compare *check* against type of *actual*. *check* must be a single type
 -- @string check extended type name expected
 -- @param actual object being typechecked
 -- @treturn boolean `true` if *actual* is of type *check*, otherwise
@@ -385,6 +385,34 @@ local function typesplit (types)
     r[#r + 1] = "nil"
   end
   return r
+end
+
+
+local function checktypespec (expected, actual)
+  expected = typesplit (expected)
+
+  -- Check actual has one of the types from expected
+  for _, expect in ipairs (expected) do
+    local check, contents = string_match (expect, "^(%S+) of (%S-)s?$")
+    check = check or expect
+
+    -- Does the type of actual check out?
+    ok = checktype (check, actual)
+
+    -- For "table of things", check all elements are a thing too.
+    if ok and contents and type (actual) == "table" then
+      for k, v in pairs (actual) do
+        if not checktype (contents, v) then
+          return nil, extramsg_mismatch (expected, v, k)
+        end
+      end
+    end
+    if ok then
+      return true
+    end
+  end
+
+  return nil, extramsg_mismatch (expected, actual)
 end
 
 
@@ -575,30 +603,10 @@ if _DEBUG.argcheck then
 
   function argcheck (name, i, expected, actual, level)
     level = level or 2
-    expected = typesplit (expected)
 
-    -- Check actual has one of the types from expected
-    local ok = false
-    for _, expect in ipairs (expected) do
-      local check, contents = string_match (expect, "^(%S+) of (%S-)s?$")
-      check = check or expect
-
-      -- Does the type of actual check out?
-      ok = checktype (check, actual)
-
-      -- For "table of things", check all elements are a thing too.
-      if ok and contents and type (actual) == "table" then
-        for k, v in pairs (actual) do
-          if not checktype (contents, v) then
-            argerror (name, i, extramsg_mismatch (expected, v, k), level + 1)
-          end
-        end
-      end
-      if ok then break end
-    end
-
-    if not ok then
-      argerror (name, i, extramsg_mismatch (expected, actual), level + 1)
+    local ok, err = checktypespec (expected, actual)
+    if err then
+      argerror (name, i, err, level + 1)
     end
   end
 
@@ -826,6 +834,18 @@ return {
   --   ...
   -- end
   argscheck = argscheck,
+
+  --- Checks the type of *actual* against the *expected* typespec
+  -- @function check
+  -- @tparam string expected expected typespec
+  -- @param actual object being typechecked
+  -- @treturn[1] bool `true`, if *actual* matches *expected*
+  -- @return[2] `nil`
+  -- @treturn[2] string an @{extramsg_mismatch} format error message, otherwise
+  -- @usage
+  --   --> stdin:2: string or number expected, got empty table
+  --   assert (check ("string|number", {}))
+  check = checktypespec,
 
   --- Format a type mismatch error.
   -- @function extramsg_mismatch

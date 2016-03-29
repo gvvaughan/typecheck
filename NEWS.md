@@ -13,6 +13,10 @@
     end
     ```
 
+  - New `check` method for ensuring that a single argument matches a
+    given type specifier.
+
+
 ## Noteworthy changes in release 1.0 (2016-01-25) [stable]
 
 ### New features
