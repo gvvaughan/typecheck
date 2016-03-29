@@ -454,6 +454,14 @@ if _DEBUG.argcheck then
       return true
     elseif check == "file" and io_type (actual) == "file" then
       return true
+    elseif check == "callable" then
+      if checktype ("function", actual) or checktype ("functor", actual) then
+        return true
+      end
+    elseif check == "functor" then
+      if (getmetatable (actual) or {}).__call ~= nil then
+        return true
+      end
     end
 
     local actualtype = type (actual)
@@ -465,12 +473,8 @@ if _DEBUG.argcheck then
       if actualtype == "table" and next (actual) then
         return true
       end
-    elseif check == "function" or check == "func" then
-      if actualtype == "function" or
-          (getmetatable (actual) or {}).__call ~= nil
-      then
-         return true
-      end
+    elseif check == "func" and actualtype == "function" then
+      return true
     elseif check == "int" then
       if actualtype == "number" and actual == math_floor (actual) then
         return true
@@ -721,8 +725,11 @@ return {
   --
   --    #table    accept any non-empty table
   --    any       accept any non-nil argument type
+  --    callable  accept a function or a functor
   --    file      accept an open file object
-  --    function  accept a function, or object with a __call metamethod
+  --    func      accept a function
+  --    function  accept a function
+  --    functor   accept an object with a __call metamethod
   --    int       accept an integer valued number
   --    list      accept a table where all keys are a contiguous 1-based integer range
   --    #list     accept any non-empty list
