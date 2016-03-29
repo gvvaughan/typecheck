@@ -224,37 +224,10 @@ local function split (s, sep)
 end
 
 
---[[ =============== ]]--
---[[ Implementation. ]]--
---[[ =============== ]]--
 
-
-local function raise (bad, to, name, i, extramsg, level)
-  level = level or 1
-  local s = string_format ("bad %s #%d %s '%s'", bad, i, to, name)
-  if extramsg ~= nil then
-    s = s .. " (" .. extramsg .. ")"
-  end
-  error (s, level + 1)
-end
-
-
-local function argerror (name, i, extramsg, level)
-  level = level or 1
-  raise ("argument", "to", name, i, extramsg, level + 1)
-end
-
-
-local function resulterror (name, i, extramsg, level)
-  level = level or 1
-  raise ("result", "from", name, i, extramsg, level + 1)
-end
-
-
-local function extramsg_toomany (bad, expected, actual)
-  local s = "no more than %d %s%s expected, got %d"
-  return string_format (s, expected, bad, expected == 1 and "" or "s", actual)
-end
+--[[ =============================== ]]--
+--[[ Implementation of value checks. ]]--
+--[[ =============================== ]]--
 
 
 --- Concatenate a table of strings using ", " and " or " delimiters.
@@ -331,6 +304,158 @@ local function extramsg_mismatch (expectedtypes, actual, index)
 end
 
 
+--- Compare *check* against type of *actual*. *check* must be a single type
+-- @string check extended type name expected
+-- @param actual object being typechecked
+-- @treturn boolean `true` if *actual* is of type *check*, otherwise
+--   `false`
+local function checktype (check, actual)
+  if check == "any" and actual ~= nil then
+    return true
+  elseif check == "file" and io_type (actual) == "file" then
+    return true
+  end
+
+  local actualtype = type (actual)
+  if check == actualtype then
+    return true
+  elseif check == "bool" and actualtype == "boolean" then
+    return true
+  elseif check == "#table" then
+    if actualtype == "table" and next (actual) then
+      return true
+    end
+  elseif check == "function" or check == "func" then
+    if actualtype == "function" or
+        (getmetatable (actual) or {}).__call ~= nil
+    then
+       return true
+    end
+  elseif check == "int" then
+    if actualtype == "number" and actual == math_floor (actual) then
+      return true
+    end
+  elseif type (check) == "string" and check:sub (1, 1) == ":" then
+    if check == actual then
+      return true
+    end
+  end
+
+  actualtype = _type (actual)
+  if check == actualtype then
+    return true
+  elseif check == "list" or check == "#list" then
+    if actualtype == "table" or actualtype == "List" then
+      local len, count = len (actual), 0
+      local i = next (actual)
+      repeat
+        if i ~= nil then count = count + 1 end
+        i = next (actual, i)
+      until i == nil or count > len
+      if count == len and (check == "list" or count > 0) then
+        return true
+      end
+    end
+  elseif check == "object" then
+    if actualtype ~= "table" and type (actual) == "table" then
+      return true
+    end
+  end
+
+  return false
+end
+
+
+local function typesplit (types)
+  if type (types) == "string" then
+    types = split (string_gsub (types, "%s+or%s+", "|"), "%s*|%s*")
+  end
+  local r, seen, add_nil = {}, {}, false
+  for _, v in ipairs (types) do
+    local m = string_match (v, "^%?(.+)$")
+    if m then
+      add_nil, v = true, m
+    end
+    if not seen[v] then
+      r[#r + 1] = v
+      seen[v] = true
+    end
+  end
+  if add_nil then
+    r[#r + 1] = "nil"
+  end
+  return r
+end
+
+
+--- Compare *check* against type of *actual*. *check* can be a typespec string
+-- @string check extended type name expected
+-- @param actual object being typechecked
+-- @treturn boolean `true` if *actual* is of type *check*, otherwise
+--   `false`
+-- @treturn string an error description in case the check fails
+local function checktypespec (expected, actual)
+  expected = typesplit (expected)
+
+  -- Check actual has one of the types from expected
+  for _, expect in ipairs (expected) do
+    local check, contents = string_match (expect, "^(%S+) of (%S-)s?$")
+    check = check or expect
+
+    -- Does the type of actual check out?
+    ok = checktype (check, actual)
+
+    -- For "table of things", check all elements are a thing too.
+    if ok and contents and type (actual) == "table" then
+      for k, v in pairs (actual) do
+        if not checktype (contents, v) then
+          return false, extramsg_mismatch (expected, v, k)
+        end
+      end
+    end
+    if ok then
+      return true
+    end
+  end
+
+  return false, extramsg_mismatch (expected, actual)
+end
+
+
+
+--[[ ================================== ]]--
+--[[ Implementation of function checks. ]]--
+--[[ ================================== ]]--
+
+
+local function raise (bad, to, name, i, extramsg, level)
+  level = level or 1
+  local s = string_format ("bad %s #%d %s '%s'", bad, i, to, name)
+  if extramsg ~= nil then
+    s = s .. " (" .. extramsg .. ")"
+  end
+  error (s, level + 1)
+end
+
+
+local function argerror (name, i, extramsg, level)
+  level = level or 1
+  raise ("argument", "to", name, i, extramsg, level + 1)
+end
+
+
+local function resulterror (name, i, extramsg, level)
+  level = level or 1
+  raise ("result", "from", name, i, extramsg, level + 1)
+end
+
+
+local function extramsg_toomany (bad, expected, actual)
+  local s = "no more than %d %s%s expected, got %d"
+  return string_format (s, expected, bad, expected == 1 and "" or "s", actual)
+end
+
+
 --- Strip trailing ellipsis from final argument if any, storing maximum
 -- number of values that can be matched directly in `t.maxvalues`.
 -- @tparam table t table to act on
@@ -367,28 +492,6 @@ local function permute (t)
     end
   end
   return p
-end
-
-
-local function typesplit (types)
-  if type (types) == "string" then
-    types = split (string_gsub (types, "%s+or%s+", "|"), "%s*|%s*")
-  end
-  local r, seen, add_nil = {}, {}, false
-  for _, v in ipairs (types) do
-    local m = string_match (v, "^%?(.+)$")
-    if m then
-      add_nil, v = true, m
-    end
-    if not seen[v] then
-      r[#r + 1] = v
-      seen[v] = true
-    end
-  end
-  if add_nil then
-    r[#r + 1] = "nil"
-  end
-  return r
 end
 
 
@@ -441,68 +544,6 @@ if _DEBUG.argcheck then
       local ok = pcall (argcheck, "pcall", i, typelist[n], valuelist[i])
       if not ok then return i end
     end
-  end
-
-
-  --- Compare *check* against type of *actual*
-  -- @string check extended type name expected
-  -- @param actual object being typechecked
-  -- @treturn boolean `true` if *actual* is of type *check*, otherwise
-  --   `false`
-  local function checktype (check, actual)
-    if check == "any" and actual ~= nil then
-      return true
-    elseif check == "file" and io_type (actual) == "file" then
-      return true
-    end
-
-    local actualtype = type (actual)
-    if check == actualtype then
-      return true
-    elseif check == "bool" and actualtype == "boolean" then
-      return true
-    elseif check == "#table" then
-      if actualtype == "table" and next (actual) then
-        return true
-      end
-    elseif check == "function" or check == "func" then
-      if actualtype == "function" or
-          (getmetatable (actual) or {}).__call ~= nil
-      then
-         return true
-      end
-    elseif check == "int" then
-      if actualtype == "number" and actual == math_floor (actual) then
-        return true
-      end
-    elseif type (check) == "string" and check:sub (1, 1) == ":" then
-      if check == actual then
-        return true
-      end
-    end
-
-    actualtype = _type (actual)
-    if check == actualtype then
-      return true
-    elseif check == "list" or check == "#list" then
-      if actualtype == "table" or actualtype == "List" then
-        local len, count = len (actual), 0
-        local i = next (actual)
-        repeat
-          if i ~= nil then count = count + 1 end
-          i = next (actual, i)
-        until i == nil or count > len
-        if count == len and (check == "list" or count > 0) then
-          return true
-        end
-      end
-    elseif check == "object" then
-      if actualtype ~= "table" and type (actual) == "table" then
-        return true
-      end
-    end
-
-    return false
   end
 
 
@@ -568,30 +609,10 @@ if _DEBUG.argcheck then
 
   function argcheck (name, i, expected, actual, level)
     level = level or 2
-    expected = typesplit (expected)
 
-    -- Check actual has one of the types from expected
-    local ok = false
-    for _, expect in ipairs (expected) do
-      local check, contents = string_match (expect, "^(%S+) of (%S-)s?$")
-      check = check or expect
-
-      -- Does the type of actual check out?
-      ok = checktype (check, actual)
-
-      -- For "table of things", check all elements are a thing too.
-      if ok and contents and type (actual) == "table" then
-        for k, v in pairs (actual) do
-          if not checktype (contents, v) then
-            argerror (name, i, extramsg_mismatch (expected, v, k), level + 1)
-          end
-        end
-      end
-      if ok then break end
-    end
-
-    if not ok then
-      argerror (name, i, extramsg_mismatch (expected, actual), level + 1)
+    local ok, err = checktypespec (expected, actual)
+    if err then
+      argerror (name, i, err, level + 1)
     end
   end
 
@@ -819,6 +840,16 @@ return {
   --   ...
   -- end
   argscheck = argscheck,
+
+  --- Checks the type of *actual* against the *expected* typespec
+  -- @tparam string expected expected typespec
+  -- @param actual object being typechecked
+  -- @treturn boolean `true` if *actual* matches the *expected* typespec,
+  --   `false` otherwise
+  -- @treturn string an error description in case the check fails
+  -- @usage
+  --   assert(check("string|number", value))
+  check = checktypespec,
 
   --- Format a type mismatch error.
   -- @function extramsg_mismatch
