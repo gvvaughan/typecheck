@@ -168,19 +168,24 @@ specify typecheck:
     - it matches types:
         expect (fn (":foo", ":foo")).not_to_raise "any error"
   - context with callable types:
+    - before:
+        fctr = setmetatable ({0}, {__call = function () end})
     - it diagnoses missing types:
+        expect (fn ("callable", nil)).to_raise "callable expected, got no value"
         expect (fn ("func", nil)).to_raise "function expected, got no value"
+        expect (fn ("functor", nil)).to_raise "functor expected, got no value"
         expect (fn ("function", nil)).to_raise "function expected, got no value"
     - it diagnoses mismatched types:
-        expect (fn ("func", {0})).to_raise "function expected, got table"
-        expect (fn ("function", {0})).to_raise "function expected, got table"
+        expect (fn ("callable", {0})).to_raise "callable expected, got table"
+        expect (fn ("func", fctr)).to_raise "function expected, got functor"
+        expect (fn ("functor", fn)).to_raise "functor expected, got function"
+        expect (fn ("function", fctr)).to_raise "function expected, got functor"
     - it matches types:
+        expect (fn ("callable", fn)).not_to_raise "any error"
+        expect (fn ("callable", fctr)).not_to_raise "any error"
         expect (fn ("func", function () end)).not_to_raise "any error"
-        expect (fn ("func", setmetatable ({}, {__call = function () end}))).
-          not_to_raise "any error"
-        expect (fn ("function", function () end)).not_to_raise "any error"
-        expect (fn ("function", setmetatable ({}, {__call = function () end}))).
-          not_to_raise "any error"
+        expect (fn ("functor", fctr)).not_to_raise "any error"
+        expect (fn ("function", fn)).not_to_raise "any error"
   - context with table of homogenous elements:
     - it diagnoses missing types:
         expect (fn ("table of boolean", nil)).

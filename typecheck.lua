@@ -258,12 +258,16 @@ local function extramsg_mismatch (expectedtypes, actual, index)
     actualtype = "no value"
   elseif actualtype == "string" and actual:sub (1, 1) == ":" then
     actualtype = actual
-  elseif type (actual) == "table" and next (actual) == nil then
-    local matchstr = "," .. table_concat (expectedtypes, ",") .. ","
-    if actualtype == "table" and matchstr == ",#list," then
-      actualtype = "empty list"
-    elseif actualtype == "table" or matchstr:match ",#" then
-      actualtype = "empty " .. actualtype
+  elseif type (actual) == "table" then
+    if actualtype == "table" and (getmetatable (actual) or {}).__call ~= nil then
+      actualtype = "functor"
+    elseif next (actual) == nil then
+      local matchstr = "," .. table_concat (expectedtypes, ",") .. ","
+      if actualtype == "table" and matchstr == ",#list," then
+        actualtype = "empty list"
+      elseif actualtype == "table" or matchstr:match ",#" then
+        actualtype = "empty " .. actualtype
+      end
     end
   end
 
@@ -314,6 +318,10 @@ local function checktype (check, actual)
     return true
   elseif check == "file" and io_type (actual) == "file" then
     return true
+  elseif check == "functor" or check == "callable" then
+    if (getmetatable (actual) or {}).__call ~= nil then
+      return true
+    end
   end
 
   local actualtype = type (actual)
@@ -325,11 +333,9 @@ local function checktype (check, actual)
     if actualtype == "table" and next (actual) then
       return true
     end
-  elseif check == "function" or check == "func" then
-    if actualtype == "function" or
-        (getmetatable (actual) or {}).__call ~= nil
-    then
-       return true
+  elseif check == "func" or check == "callable" then
+    if actualtype == "function" then
+      return true
     end
   elseif check == "int" then
     if actualtype == "number" and actual == math_floor (actual) then
@@ -736,8 +742,11 @@ return {
   --
   --    #table    accept any non-empty table
   --    any       accept any non-nil argument type
+  --    callable  accept a function or a functor
   --    file      accept an open file object
-  --    function  accept a function, or object with a __call metamethod
+  --    func      accept a function
+  --    function  accept a function
+  --    functor   accept an object with a __call metamethod
   --    int       accept an integer valued number
   --    list      accept a table where all keys are a contiguous 1-based integer range
   --    #list     accept any non-empty list
