@@ -94,11 +94,15 @@ do
   end
 
   -- Unless strict was disabled (`_DEBUG = false`), or that module is not
-  -- available, check for use of undeclared variables in this module.
+  -- available, check for use of undeclared variables in this module...
   if _DEBUG.strict then
     local ok, strict	= pcall (require, "strict")
     if ok then
       _ENV = strict {}
+    else
+      -- ...otherwise, the strict function is not available at all!
+      _DEBUG.strict	= false
+      strict		= false
     end
   end
 end
@@ -147,21 +151,6 @@ local ipairs = (_VERSION == "Lua 5.3") and ipairs or function (l)
 end
 
 
--- Respect __pairs method, even in Lua 5.1.
-if not pairs (setmetatable ({}, {__pairs = function () return false end })) then
-  local _pairs = pairs
-  pairs = function (t)
-    return (getmetamethod (t, "__pairs") or _pairs) (t)
-  end
-end
-
-
--- Use the fastest pack implementation available.
-local table_pack = table_pack or function (...)
-  return { n = select ("#", ...), ...}
-end
-
-
 -- Respect __len metamethod (like Lua 5.2+), otherwise always return one
 -- less than the index of the first nil value in table x.
 local function len (x)
@@ -174,6 +163,15 @@ local function len (x)
     if x[i] == nil then return i -1 end
   end
   return n
+end
+
+
+-- Respect __pairs method, even in Lua 5.1.
+if not pairs(setmetatable({},{__pairs=function() return false end})) then
+  local _pairs = pairs
+  pairs = function (t)
+    return (getmetamethod (t, "__pairs") or _pairs) (t)
+  end
 end
 
 
@@ -190,6 +188,12 @@ local setfenv = debug_setfenv or function (fn, env)
   end
 
   return fn
+end
+
+
+-- Use the fastest pack implementation available.
+local table_pack = table_pack or function (...)
+  return { n = select ("#", ...), ...}
 end
 
 
