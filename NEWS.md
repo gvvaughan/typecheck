@@ -13,7 +13,7 @@
     end
     ```
 
-  - New `check` method for ensuring that a single argument matches a
+  - New `check` method for ensuring that a single value matches a
     given type specifier.
 
   - New "functor" type specifier for matching objects with a `__call`
@@ -22,7 +22,7 @@
 
   - New "callable" type specifier for matching both objects with a
     `__call` metamethod, and objects for which Lua `type` returns
-    "function" - not, this is exactly what the "function" specifier
+    "function" - note, this is exactly what the "function" specifier
     used to do.
 
 ### Incompatible changes

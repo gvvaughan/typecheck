@@ -20,7 +20,7 @@ core Lua C-language `argcheck ()` API.
 - *gradual*: Type checks can be introduced to the functions in your code
   gradually, to as few or as many as seem useful;
 - *type checking*: function argument types and return types are checked
-  against the specification, and raise an
+  against the specification, and raise an error if some don't match
 
 This is a light-weight library for [Lua][] 5.1 (including [LuaJIT][]),
 5.2 and 5.3 written in pure Lua.
