@@ -85,6 +85,7 @@ do
           t[k] = v.default
         end
       end
+      return t
     end
 
     _DEBUG = choose {
