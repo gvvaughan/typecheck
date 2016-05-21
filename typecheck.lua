@@ -25,183 +25,31 @@
  @module typecheck
 ]]
 
+local _DEBUG = require "std.normalize._debug"
 
-local _ENV		= _ENV
-local error		= error
-local getmetatable	= getmetatable
-local getfenv		= getfenv or false
-local ipairs		= ipairs
-local next		= next
-local pairs		= pairs
-local pcall		= pcall
-local type		= type
+local _ENV = require "std.normalize" {
+  "io",
+  "math",
+  "string",
+  "table",
+}
 
-local debug_getinfo	= debug.getinfo
-local debug_getupvalue	= debug.getupvalue
-local debug_setfenv	= debug.setfenv or false
-local debug_setupvalue	= debug.setupvalue
-local debug_upvaluejoin	= debug.upvaluejoin
+
 local io_type		= io.type
 local math_floor	= math.floor
-local math_max		= math.max
 local string_find	= string.find
 local string_format	= string.format
 local string_gsub	= string.gsub
 local string_match	= string.match
 local table_concat	= table.concat
 local table_insert	= table.insert
-local table_pack	= table.pack or pack or false
 local table_remove	= table.remove
 local table_sort	= table.sort
-local table_unpack	= table.unpack or unpack
 
 
-
---[[ ================== ]]--
---[[ Initialize _DEBUG. ]]--
---[[ ================== ]]--
-
-
-local _DEBUG		= _DEBUG
-do
-  -- Make sure none of these symbols leak out into the rest of the
-  -- module, in case we can enable `strict` mode at the end of the block.
-
-  local ok, debug_init	= pcall (require, "std.debug_init")
-  if ok then
-    _DEBUG		= debug_init._DEBUG
-  else
-    local function choose (t)
-      for k, v in pairs (t) do
-        if _DEBUG == false then
-          t[k] = v.fast
-        elseif _DEBUG == nil then
-          t[k] = v.default
-        elseif type (_DEBUG) ~= "table" then
-          t[k] = v.safe
-        elseif _DEBUG[k] ~= nil then
-          t[k] = _DEBUG[k]
-        else
-          t[k] = v.default
-        end
-      end
-      return t
-    end
-
-    _DEBUG = choose {
-      argcheck  = {default = true,  safe = true,  fast = false},
-      strict    = {default = true,  safe = true,  fast = false},
-    } 
-  end
-
-  -- Unless strict was disabled (`_DEBUG = false`), or that module is not
-  -- available, check for use of undeclared variables in this module...
-  if _DEBUG.strict then
-    local ok, strict	= pcall (require, "strict")
-    if ok then
-      _ENV = strict {}
-    else
-      -- ...otherwise, the strict function is not available at all!
-      _DEBUG.strict	= false
-      strict		= false
-    end
-  end
-end
-
-
-
---[[ ================== ]]--
---[[ Normalize Lua API. ]]--
---[[ ================== ]]--
-
-
--- From http://lua-users.org/lists/lua-l/2010-06/msg00313.html
-getfenv = getfenv or function (fn)
-  fn = fn or 1
-
-  if type (fn) == "number" then
-    fn = debug_getinfo (fn + 1, "f").func
-  end
-
-  local name, env
-  local up = 0
-  repeat
-    up = up + 1
-    name, env = debug_getupvalue (fn, up)
-  until name == '_ENV' or name == nil
-  return env
-end
-
-
-local function getmetamethod (x, n)
-  local m = (getmetatable (x) or {})[n]
-  if type (m) == "function" then return m end
-  return (getmetatable (m) or {}).__call
-end
-
-
--- Iterate over keys 1..n, where n is the key before the first nil
--- valued ordinal key (like Lua 5.3).
-local ipairs = (_VERSION == "Lua 5.3") and ipairs or function (l)
-  return function (l, n)
-    n = n + 1
-    if l[n] ~= nil then
-      return n, l[n]
-    end
-  end, l, 0
-end
-
-
--- Respect __len metamethod (like Lua 5.2+), otherwise always return one
--- less than the index of the first nil value in table x.
-local function len (x)
-  local m = getmetamethod (x, "__len")
-  if m then return m (x) end
-  if type (x) ~= "table" then return #x end
-
-  local n = #x
-  for i = 1, n do
-    if x[i] == nil then return i -1 end
-  end
-  return n
-end
-
-
--- Respect __pairs method, even in Lua 5.1.
-if not pairs(setmetatable({},{__pairs=function() return false end})) then
-  local _pairs = pairs
-  pairs = function (t)
-    return (getmetamethod (t, "__pairs") or _pairs) (t)
-  end
-end
-
-
--- From http://lua-users.org/lists/lua-l/2010-06/msg00313.html
-local setfenv = debug_setfenv or function (fn, env)
-  local up, name = 0
-  repeat
-    up = up + 1
-    name = debug_getupvalue (fn, up)
-  until name == '_ENV' or name == nil
-  if name then
-    debug_upvaluejoin (fn, up, function () return name end, 1)
-    debug_setupvalue (fn, up, env)
-  end
-
-  return fn
-end
-
-
--- Use the fastest pack implementation available.
-local table_pack = table_pack or function (...)
-  return { n = select ("#", ...), ...}
-end
-
-
-
---[[ ================ ]]--
---[[ Helper Function. ]]--
---[[ ================ ]]--
+--[[ ================= ]]--
+--[[ Helper Functions. ]]--
+--[[ ================= ]]--
 
 
 local function copy (dest, src)
@@ -673,7 +521,7 @@ if _DEBUG.argcheck then
 
     local wrap_function = function (my_inner)
       return function (...)
-        local argt = table_pack (...)
+        local argt = pack (...)
 
         -- Don't check type of self if fname has a ':' in it.
         if string_find (fname, ":") then
@@ -692,14 +540,14 @@ if _DEBUG.argcheck then
         end
 
         -- Execute.
-        local results = table_pack (my_inner (...))
+        local results = pack (my_inner (...))
 
         -- Diagnose bad outputs.
         if returntypes then
           diagnose (results, output)
         end
 
-        return table_unpack (results, 1, results.n)
+        return unpack (results, 1, results.n)
       end
     end
 

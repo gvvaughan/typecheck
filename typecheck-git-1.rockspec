@@ -19,6 +19,7 @@ source = {
 
 dependencies = {
   "lua >= 5.1, < 5.4",
+  "std.normalize",
 }
 
 build = {
