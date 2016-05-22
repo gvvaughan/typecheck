@@ -281,25 +281,23 @@ end
 --[[ ================================== ]]--
 
 
-local function raise (bad, to, name, i, extramsg, level)
+local function argerror (name, i, extramsg, level)
   level = level or 1
-  local s = string_format ("bad %s #%d %s '%s'", bad, i, to, name)
+  local s = string_format ("bad argument #%d to '%s'", i, name)
   if extramsg ~= nil then
     s = s .. " (" .. extramsg .. ")"
   end
-  error (s, level + 1)
-end
-
-
-local function argerror (name, i, extramsg, level)
-  level = level or 1
-  raise ("argument", "to", name, i, extramsg, level + 1)
+  error (s, level > 0 and level + 1 or 0)
 end
 
 
 local function resulterror (name, i, extramsg, level)
   level = level or 1
-  raise ("result", "from", name, i, extramsg, level + 1)
+  local s = string_format ("bad result #%d from '%s'", i, name)
+  if extramsg ~= nil then
+    s = s .. " (" .. extramsg .. ")"
+  end
+  error (s, level > 0 and level + 1 or 0)
 end
 
 

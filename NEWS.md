@@ -25,6 +25,11 @@
     "function" - note, this is exactly what the "function" specifier
     used to do.
 
+### Bug fixes
+
+  - `argerror` and `resulterror` pass level 0 argument through to
+    `error` to suppress file and line number prefix to error message.
+
 ### Incompatible changes
 
   - The "function" (and "func") type specifiers no longer match objects
