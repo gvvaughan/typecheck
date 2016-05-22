@@ -19,11 +19,16 @@ install:
   - luarocks install --server=http://rocks.moonscript.org/manifests/gvvaughan ldoc
   - luarocks install ansicolors
   - luarocks install specl
+  - luarocks install luacov
 
 script:
   - make
   - luarocks make
-  - make check SPECL_OPTS=-vfreport
+  - make check SPECL_OPTS='-vfreport --coverage'
+
+after_success:
+  - tail luacov.report.out
+  - bash <(curl -s https://codecov.io/bash) -v
 
 notifications:
   slack: aspirinc:JyWeNrIdS0J5nf2Pn2BS1cih
