@@ -25,6 +25,7 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
-    typecheck = "typecheck.lua",
+    ["typecheck"]		= "lib/typecheck/init.lua",
+    ["typecheck.version"]	= "lib/typecheck/version.lua",
   },
 }

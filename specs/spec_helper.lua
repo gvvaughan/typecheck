@@ -4,7 +4,7 @@ local std       = require "specl.std"
 
 badargs = require "specl.badargs"
 
-package.path = std.package.normalize ("./?.lua", package.path)
+package.path = std.package.normalize ("./lib/?.lua", "./lib/?/init.lua", package.path)
 
 
 -- Allow user override of LUA binary used by hell.spawn, falling

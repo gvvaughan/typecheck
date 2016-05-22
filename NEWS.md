@@ -32,6 +32,9 @@
     to match both types in the way that "function" used to, including
     most `std.object` derived types.
 
+  - Rather than a hardcoded `typecheck._VERSION` string, install a
+    generated `typecheck.version` module, and autoload it on reference.
+
 
 ## Noteworthy changes in release 1.0 (2016-01-25) [stable]
 

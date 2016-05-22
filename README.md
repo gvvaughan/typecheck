@@ -48,8 +48,8 @@ report for example):
     luarocks install http://raw.githubusercontent.com/gvvaughan/typecheck/master/typecheck-git-1.rockspec
 ```
 
-The best way to install without [LuaRocks][] is to copy the
-`typecheck.lua` file into a directory in your package search path.
+The best way to install without [LuaRocks][] is to copy the entire
+`lib/typecheck` directory into a subdirectory of your package search path.
 
 [luarocks]: http://www.luarocks.org "Lua package manager"
 

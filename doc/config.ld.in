@@ -20,7 +20,7 @@ license (the same license as Lua itself).  There is no warranty.
 
 dir		= "."
 
-file		= "../typecheck.lua"
+file		= "../lib/typecheck/init.lua"
 
 format		= "markdown"
 

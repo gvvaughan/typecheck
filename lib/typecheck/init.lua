@@ -583,7 +583,7 @@ else
 end
 
 
-return {
+return setmetatable ({
   --- Check the type of an argument against expected types.
   -- Equivalent to luaL_argcheck in the Lua C API.
   --
@@ -769,10 +769,25 @@ return {
   --   replaced by a "nil" element
   typesplit = typesplit,
 
-  --- Constants.
-  -- @section constants
+}, {
 
-  --- The release version of typecheck.
-  -- @string _VERSION
-  _VERSION = "1.0",
-}
+  --- Metamethods
+  -- @section metamethods
+
+  --- Lazy loading of typecheck modules.
+  -- Don't load everything on initial startup, wait until first attempt
+  -- to access a submodule, and then load it on demand.
+  -- @function __index
+  -- @string name submodule name
+  -- @treturn table|nil the submodule that was loaded to satisfy the missing
+  --   `name`, otherwise `nil` if nothing was found
+  -- @usage
+  --   local version = require 'typecheck'.version
+  __index = function (self, name)
+    local ok, t = pcall (require, "typecheck." .. name)
+    if ok then
+      rawset (self, name, t)
+      return t
+    end
+  end,
+})

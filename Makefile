@@ -4,19 +4,38 @@ MKDIR	= mkdir -p
 SED	= sed
 SPECL	= specl
 
+VERSION	= 1.0
 
-all: doc
+luadir	= lib/typecheck
+SOURCES =				\
+	$(luadir)/init.lua		\
+	$(luadir)/version.lua		\
+	$(NOTHING_ELSE)
 
 
-doc: doc/config.ld typecheck.lua
+all: doc $(luadir)/version.lua
+
+
+$(luadir)/version.lua: .FORCE
+	@echo 'return "Gradual Function Typechecks / $(VERSION)"' > '$@T';	\
+	if cmp -s '$@' '$@T'; then						\
+	    rm -f '$@T';							\
+	else									\
+	    echo 'echo "Gradual Function Typechecks / $(VERSION)" > $@';	\
+	    mv '$@T' '$@';							\
+	fi
+
+doc: doc/config.ld $(SOURCES)
 	$(LDOC) -c doc/config.ld .
 
 doc/config.ld: doc/config.ld.in
-	version=`LUA_PATH=$$(pwd)'/?.lua;;' $(LUA) -e 'io.stdout:write(require"typecheck"._VERSION)'`; \
-	$(SED) -e "s,@PACKAGE_VERSION@,$$version," '$<' > '$@'
+	$(SED) -e "s,@PACKAGE_VERSION@,$(VERSION)," '$<' > '$@'
 
 
 CHECK_ENV = LUA=$(LUA)
 
-check:
+check: $(SOURCES)
 	LUA=$(LUA) $(SPECL) $(SPECL_OPTS) specs/*_spec.yaml
+
+
+.FORCE:
