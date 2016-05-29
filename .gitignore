@@ -2,3 +2,4 @@
 /doc/*
 !/doc/config.ld.in
 /typecheck-*.src.rock
+/luacov.*.out
