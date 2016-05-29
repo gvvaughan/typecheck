@@ -165,10 +165,14 @@ specify typecheck:
         function ohnoes (n)                         -- line 3
           typecheck.argerror ("ohnoes", 1, nil, n)  -- line 4
         end                                         -- line 5
-        function caller (n)                         -- line 6
+        function inner (n)                          -- line 6
           local r = ohnoes (n)                      -- line 7
           return "not a tail call"                  -- line 8
         end                                         -- line 9
+        function caller (n)                         -- line 10
+          local r = inner (n)                       -- line 11
+          return "not a tail call"                  -- line 12
+        end                                         -- line 13
       ]]
 
       f, badarg = init (M, this_module, "argerror")
@@ -186,18 +190,21 @@ specify typecheck:
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
-          caller ()                                -- line 10
-        ]])).to_contain_error ":4: bad argument"
+          caller ()                                -- line 14
+        ]])).to_contain_error ":7: bad argument"
     - it honors optional call stack level reporting: |
         expect (luaproc (shamble .. [[
-          caller (1)                               -- line 10
-        ]])).to_contain_error ":4: bad argument"
-        expect (luaproc (shamble .. [[
-          caller (2)                               -- line 10
+          caller (1)                               -- line 14
         ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                               -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                               -- line 14
+        ]])).to_contain_error ":14: bad argument"
     - it suppresses position information with level 0: |
         expect (luaproc (shamble .. [[
-          caller (0)                               -- line 10
+          caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
   - context global _DEBUG is false:
@@ -207,18 +214,21 @@ specify typecheck:
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
-          caller ()                                -- line 10
-        ]])).to_contain_error ":4: bad argument"
+          caller ()                                -- line 14
+        ]])).to_contain_error ":7: bad argument"
     - it honors optional call stack level reporting: |
         expect (luaproc (shamble .. [[
-          caller (1)                               -- line 10
-        ]])).to_contain_error ":4: bad argument"
-        expect (luaproc (shamble .. [[
-          caller (2)                               -- line 10
+          caller (1)                               -- line 14
         ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                               -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                               -- line 14
+        ]])).to_contain_error ":14: bad argument"
     - it suppresses position information with level 0: |
         expect (luaproc (shamble .. [[
-          caller (0)                               -- line 10
+          caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
   - context global _DEBUG is true:
@@ -228,18 +238,21 @@ specify typecheck:
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
-          caller ()                                -- line 10
-        ]])).to_contain_error ":4: bad argument"
+          caller ()                                -- line 14
+        ]])).to_contain_error ":7: bad argument"
     - it honors optional call stack level reporting: |
         expect (luaproc (shamble .. [[
-          caller (1)                               -- line 10
-        ]])).to_contain_error ":4: bad argument"
-        expect (luaproc (shamble .. [[
-          caller (2)                               -- line 10
+          caller (1)                               -- line 14
         ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                               -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                               -- line 14
+        ]])).to_contain_error ":14: bad argument"
     - it suppresses position information with level 0: |
         expect (luaproc (shamble .. [[
-          caller (0)                               -- line 10
+          caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
   - context global _DEBUG.argcheck is nil:
@@ -249,18 +262,21 @@ specify typecheck:
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
-          caller ()                                -- line 10
-        ]])).to_contain_error ":4: bad argument"
+          caller ()                                -- line 14
+        ]])).to_contain_error ":7: bad argument"
     - it honors optional call stack level reporting: |
         expect (luaproc (shamble .. [[
-          caller (1)                               -- line 10
-        ]])).to_contain_error ":4: bad argument"
-        expect (luaproc (shamble .. [[
-          caller (2)                               -- line 10
+          caller (1)                               -- line 14
         ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                               -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                               -- line 14
+        ]])).to_contain_error ":14: bad argument"
     - it suppresses position information with level 0: |
         expect (luaproc (shamble .. [[
-          caller (0)                               -- line 10
+          caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
   - context global _DEBUG.argcheck is false:
@@ -270,18 +286,21 @@ specify typecheck:
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
-          caller ()                                -- line 10
-        ]])).to_contain_error ":4: bad argument"
+          caller ()                                -- line 14
+        ]])).to_contain_error ":7: bad argument"
     - it honors optional call stack level reporting: |
         expect (luaproc (shamble .. [[
-          caller (1)                               -- line 10
-        ]])).to_contain_error ":4: bad argument"
-        expect (luaproc (shamble .. [[
-          caller (2)                               -- line 10
+          caller (1)                               -- line 14
         ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                               -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                               -- line 14
+        ]])).to_contain_error ":14: bad argument"
     - it suppresses position information with level 0: |
         expect (luaproc (shamble .. [[
-          caller (0)                               -- line 10
+          caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
   - context global _DEBUG.argcheck is true:
@@ -291,18 +310,21 @@ specify typecheck:
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
-          caller ()                                -- line 10
-        ]])).to_contain_error ":4: bad argument"
+          caller ()                                -- line 14
+        ]])).to_contain_error ":7: bad argument"
     - it honors optional call stack level reporting: |
         expect (luaproc (shamble .. [[
-          caller (1)                               -- line 10
-        ]])).to_contain_error ":4: bad argument"
-        expect (luaproc (shamble .. [[
-          caller (2)                               -- line 10
+          caller (1)                               -- line 14
         ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                               -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                               -- line 14
+        ]])).to_contain_error ":14: bad argument"
     - it suppresses position information with level 0: |
         expect (luaproc (shamble .. [[
-          caller (0)                               -- line 10
+          caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
 
@@ -318,41 +340,140 @@ specify typecheck:
 
       function fn (...) return M.argcheck ('expect', 1, ...) end
 
-      function mkstack (level, debugp)
-        return string.format ([[
-          _DEBUG = %s                                        -- line 1
-          local typecheck = require "typecheck"              -- line 2
-          function ohnoes (t)                                -- line 3
-            typecheck.argcheck ("ohnoes", 1, "table", t, %s) -- line 4
-          end                                                -- line 5
-          function caller ()                                 -- line 6
-            local r = ohnoes "not a table"                   -- line 7
-            return "not a tail call"                         -- line 8
-          end                                                -- line 9
-          caller ()                                          -- line 10
-        ]], tostring (debugp), tostring (level))
-      end
+      preamble = [[
+        local typecheck = require "typecheck"              -- line 2
+        function ohnoes (t, n)                             -- line 3
+          typecheck.argcheck ("ohnoes", 1, "table", t, n)  -- line 4
+        end                                                -- line 5
+        function inner (n)                                 -- line 6
+          local r = ohnoes ("not a table", n)              -- line 7
+          return "not a tail call"                         -- line 8
+        end                                                -- line 9
+        function caller (n)                                -- line 10
+          local r = inner (n)                              -- line 11
+          return "not a tail call"                         -- line 12
+        end                                                -- line 13
+      ]]
 
       f, badarg = init (M, this_module, "argcheck")
 
-  - it blames the calling function by default: |
-      expect (luaproc (mkstack ())).to_contain_error ":7: bad argument"
-  - it honors optional call stack level reporting: |
-      expect (luaproc (mkstack (1))).to_contain_error ":4: bad argument"
-      expect (luaproc (mkstack (2))).to_contain_error ":7: bad argument"
-      expect (luaproc (mkstack (3))).to_contain_error ":10: bad argument"
-  - it can be disabled by setting _DEBUG to false:
-      expect (luaproc (mkstack (nil, false))).
-        not_to_contain_error "bad argument"
-  - it can be disabled by setting _DEBUG.argcheck to false:
-      expect (luaproc (mkstack (nil, "{ argcheck = false }"))).
-        not_to_contain_error "bad argument"
-  - it is not disabled by setting _DEBUG.argcheck to true:
-      expect (luaproc (mkstack (nil, "{ argcheck = true }"))).
-        to_contain_error "bad argument"
-  - it is not disabled by leaving _DEBUG.argcheck unset:
-      expect (luaproc (mkstack (nil, "{}"))).
-        to_contain_error "bad argument"
+  - context global _DEBUG is nil:
+    - before: |
+        shamble = [[
+          _DEBUG = nil                                    -- line 1
+        ]] .. preamble
+    - it blames the call site by default: |
+        expect (luaproc (shamble .. [[
+          caller ()                                       -- line 14
+        ]])).to_contain_error ":7: bad argument"
+    - it honors optional call stack level reporting: |
+        expect (luaproc (shamble .. [[
+          caller (1)                                      -- line 14
+        ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                                      -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                                      -- line 14
+        ]])).to_contain_error ":14: bad argument"
+
+  - context global _DEBUG is false:
+    - before: |
+        shamble = [[
+          _DEBUG = false                                  -- line 1
+        ]] .. preamble
+    - it is disabled:
+        expect (luaproc (shamble .. [[
+          caller ()                                       -- line 14
+        ]])).not_to_contain_error "bad argument"
+        expect (luaproc (shamble .. [[
+          caller (1)                                      -- line 14
+        ]])).not_to_contain_error "bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                                      -- line 14
+        ]])).not_to_contain_error "bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                                      -- line 14
+        ]])).not_to_contain_error "bad argument"
+
+  - context global _DEBUG is true:
+    - before: |
+        shamble = [[
+          _DEBUG = true                                   -- line 1
+        ]] .. preamble
+    - it blames the call site by default: |
+        expect (luaproc (shamble .. [[
+          caller ()                                       -- line 14
+        ]])).to_contain_error ":7: bad argument"
+    - it honors optional call stack level reporting: |
+        expect (luaproc (shamble .. [[
+          caller (1)                                      -- line 14
+        ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                                      -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                                      -- line 14
+        ]])).to_contain_error ":14: bad argument"
+
+  - context global _DEBUG.argcheck is nil:
+    - before: |
+        shamble = [[
+          _DEBUG = { argcheck = nil }                     -- line 1
+        ]] .. preamble
+    - it blames the call site by default: |
+        expect (luaproc (shamble .. [[
+          caller ()                                       -- line 14
+        ]])).to_contain_error ":7: bad argument"
+    - it honors optional call stack level reporting: |
+        expect (luaproc (shamble .. [[
+          caller (1)                                      -- line 14
+        ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                                      -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                                      -- line 14
+        ]])).to_contain_error ":14: bad argument"
+
+  - context global _DEBUG.argcheck is false:
+    - before: |
+        shamble = [[
+          _DEBUG = { argcheck = false }                   -- line 1
+        ]] .. preamble
+    - it is disabled: |
+        expect (luaproc (shamble .. [[
+          caller ()                                       -- line 14
+        ]])).not_to_contain_error "bad argument"
+        expect (luaproc (shamble .. [[
+          caller (1)                                      -- line 14
+        ]])).not_to_contain_error "bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                                      -- line 14
+        ]])).not_to_contain_error "bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                                      -- line 14
+        ]])).not_to_contain_error "bad argument"
+
+  - context global _DEBUG.argcheck is true:
+    - before: |
+        shamble = [[
+          _DEBUG = { argcheck = true }                    -- line 1
+        ]] .. preamble
+    - it blames the call site by default: |
+        expect (luaproc (shamble .. [[
+          caller ()                                       -- line 14
+        ]])).to_contain_error ":7: bad argument"
+    - it honors optional call stack level reporting: |
+        expect (luaproc (shamble .. [[
+          caller (1)                                      -- line 14
+        ]])).to_contain_error ":7: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (2)                                      -- line 14
+        ]])).to_contain_error ":11: bad argument"
+        expect (luaproc (shamble .. [[
+          caller (3)                                      -- line 14
+        ]])).to_contain_error ":14: bad argument"
 
   - context with primitives:
     - it diagnoses missing types:

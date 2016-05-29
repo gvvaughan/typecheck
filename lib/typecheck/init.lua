@@ -281,16 +281,6 @@ end
 --[[ ================================== ]]--
 
 
-local function argerror (name, i, extramsg, level)
-  level = level or 1
-  local s = string_format ("bad argument #%d to '%s'", i, name)
-  if extramsg ~= nil then
-    s = s .. " (" .. extramsg .. ")"
-  end
-  error (s, level > 0 and level + 1 or 0)
-end
-
-
 local function resulterror (name, i, extramsg, level)
   level = level or 1
   local s = string_format ("bad result #%d from '%s'", i, name)
@@ -459,7 +449,7 @@ if _DEBUG.argcheck then
 
 
   function argcheck (name, i, expected, actual, level)
-    level = level or 2
+    level = level or 1
 
     local ok, err = checktypespec (expected, actual)
     if err then
