@@ -25,6 +25,28 @@ specify typecheck:
 
       f, badarg = init (M, this_module, "resulterror")
 
+  - context with bad arguments:
+    - 'it diagnoses missing argument #1':
+        expect (f ()).to_raise "string expected, got no value"
+    - 'it diagnoses argument #1 type not string':
+        stringy = setmetatable ({}, {__tostring = function () end})
+        expect (f (nil)).to_raise "string expected, got nil"
+        expect (f (stringy)).not_to_raise "string expected"
+    - 'it diagnoses missing argument #2':
+        expect (f "X").to_raise "integer expected, got no value"
+    - 'it diagnoses argument #2 type not number':
+        expect (f ("X", nil)).to_raise "integer expected, got nil"
+        expect (f ("X", '1')).not_to_raise "integer expected"
+    - 'it diagnoses argument #2 type not integer':
+        expect (f ("X", 1.0001)).to_raise "number has no integer representation"
+        expect (f ("X", '1.0001')).to_raise "number has no integer representation"
+    - 'it diagnoses argument #4 type not number': |
+        expect (f ("X", 1, "ohnoes", false)).
+          to_raise "bad argument #4 to 'resulterror' (integer expected, got boolean)"
+    - 'it diagnoses argument #4 type not integer': |
+        expect (f ("X", 99999.0, "ohnoes", 0.99999)).
+          to_raise "bad argument #4 to 'resulterror' (number has no integer representation)"
+
   - it raises a result error: |
       expect (f ("myfunc", 1)).to_raise "bad result #1 from 'myfunc'"
   - it supports optional extramsg argument: |
@@ -176,6 +198,28 @@ specify typecheck:
       ]]
 
       f, badarg = init (M, this_module, "argerror")
+
+  - context with bad arguments:
+    - 'it diagnoses missing argument #1':
+        expect (f ()).to_raise "string expected, got no value"
+    - 'it diagnoses argument #1 type not string':
+        stringy = setmetatable ({}, {__tostring = function () end})
+        expect (f (nil)).to_raise "string expected, got nil"
+        expect (f (stringy)).not_to_raise "string expected"
+    - 'it diagnoses missing argument #2':
+        expect (f "X").to_raise "integer expected, got no value"
+    - 'it diagnoses argument #2 type not number':
+        expect (f ("X", nil)).to_raise "integer expected, got nil"
+        expect (f ("X", '1')).not_to_raise "integer expected"
+    - 'it diagnoses argument #2 type not integer':
+        expect (f ("X", 1.0001)).to_raise "number has no integer representation"
+        expect (f ("X", '1.0001')).to_raise "number has no integer representation"
+    - 'it diagnoses argument #4 type not number': |
+        expect (f ("X", 1, "ohnoes", false)).
+          to_raise "bad argument #4 to 'argerror' (integer expected, got boolean)"
+    - 'it diagnoses argument #4 type not integer': |
+        expect (f ("X", 99999.0, "ohnoes", 0.99999)).
+          to_raise "bad argument #4 to 'argerror' (number has no integer representation)"
 
   - it raises an argument error: |
       expect (f ("myfunc", 1)).to_raise "bad argument #1 to 'myfunc'"

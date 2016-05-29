@@ -25,14 +25,19 @@
  @module typecheck
 ]]
 
-local _DEBUG = require "std.normalize._debug"
 
 local _ENV = require "std.normalize" {
   "io",
   "math",
   "string",
   "table",
+
+  _DEBUG	= "std.normalize._debug",
+  _typecheck	= "std.normalize._typecheck",
 }
+
+
+local ARGCHECK_FRAME	= _typecheck.ARGCHECK_FRAME
 
 
 local io_type		= io.type
@@ -287,7 +292,7 @@ local function resulterror (name, i, extramsg, level)
   if extramsg ~= nil then
     s = s .. " (" .. extramsg .. ")"
   end
-  error (s, level > 0 and level + 1 or 0)
+  error (s, level > 0 and level + 1 + ARGCHECK_FRAME or 0)
 end
 
 
@@ -571,6 +576,8 @@ else
 end
 
 
+local T, any, opt = _typecheck.types, _typecheck.any, _typecheck.opt
+
 return setmetatable ({
   --- Check the type of an argument against expected types.
   -- Equivalent to luaL_argcheck in the Lua C API.
@@ -639,7 +646,9 @@ return setmetatable ({
   --   local h, err = input_handle (file)
   --   if h == nil then argerror ("std.io.slurp", 1, err, 2) end
   --   ...
-  argerror = argerror,
+  argerror = _typecheck.argscheck (
+    "argerror", T.stringy, T.integer, T.accept, opt (T.integer)
+  ) .. _typecheck.argerror,
 
   --- Wrap a function definition with argument type and arity checking.
   -- In addition to checking that each argument type matches the corresponding
@@ -748,7 +757,9 @@ return setmetatable ({
   -- local function slurp (file)
   --   ...
   --   if type (result) ~= "string" then resulterror ("std.io.slurp", 1, err, 2) end
-  resulterror = resulterror,
+  resulterror = _typecheck.argscheck (
+    "resulterror", T.stringy, T.integer, T.accept, opt (T.integer)
+  ).. resulterror,
 
   --- Split a typespec string into a table of normalized type names.
   -- @function typesplit
