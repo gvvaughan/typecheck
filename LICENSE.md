@@ -1,4 +1,4 @@
-Copyright (C) 2014-2016 Gary V. Vaughan
+Copyright (C) 2014-2017 Gary V. Vaughan
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
