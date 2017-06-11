@@ -1,8 +1,12 @@
--- -*- lua -*-
-title		= "typecheck @PACKAGE_VERSION@ Reference"
-project		= "typecheck @PACKAGE_VERSION@"
-description	= [[
-# Gradual Function Argument Type Checking
+--[[
+ Gradual Function Type Checking for Lua 5.1, 5.2 & 5.3
+ Copyright (C) 2014-2017 Gary V. Vaughan
+]]
+
+title = 'typecheck @PACKAGE_VERSION@ Reference'
+project = 'typecheck @PACKAGE_VERSION@'
+description = [[
+# Gradual Function Type Checking
 
 A Luaish run-time gradual type checking system, for argument and return
 types at function boundaries with simple annotations that can be disabled
@@ -18,12 +22,10 @@ The code is copyright by its author, and released under the MIT
 license (the same license as Lua itself).  There is no warranty.
 ]]
 
-dir		= "."
+dir = '.'
 
-file		= "../lib/typecheck/init.lua"
+file = "../lib/typecheck/init.lua"
 
-format		= "markdown"
-
-sort		= false
-
+format = 'markdown'
 backtick_references = false
+sort = false
