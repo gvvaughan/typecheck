@@ -25,10 +25,10 @@ $(luadir)/version.lua: .FORCE
 	    mv '$@T' '$@';							\
 	fi
 
-doc: doc/config.ld $(SOURCES)
-	$(LDOC) -c doc/config.ld .
+doc: build-aux/config.ld $(SOURCES)
+	$(LDOC) -c build-aux/config.ld .
 
-doc/config.ld: doc/config.ld.in
+build-aux/config.ld: build-aux/config.ld.in
 	$(SED) -e "s,@PACKAGE_VERSION@,$(VERSION)," '$<' > '$@'
 
 

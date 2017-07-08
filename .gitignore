@@ -1,7 +1,8 @@
 *~
 .DS_Store
-/doc/*
-!/doc/config.ld.in
+/build-aux/config.ld
+/doc
 /lib/typecheck/version.lua
-/typecheck-*.src.rock
 /luacov.*.out
+/typecheck-*.src.rock
+/typecheck-*.tar.gz
