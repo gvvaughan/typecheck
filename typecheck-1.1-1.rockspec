@@ -1,4 +1,4 @@
-local _MODREV, _SPECREV = 'git', '-1'
+local _MODREV, _SPECREV = '1.1', '-1'
 
 package = 'typecheck'
 version = _MODREV .. _SPECREV
@@ -16,15 +16,13 @@ description = {
 }
 
 source = {
-   url = 'git://github.com/gvvaughan/typecheck.git',
--- url = 'http://github.com/gvvaughan/typecheck/archive/v' .. _MODREV,
--- dir = 'typecheck-' .. _MODREV,
+   url = 'http://github.com/gvvaughan/typecheck/archive/v' .. _MODREV .. '.zip',
+   dir = 'typecheck-' .. _MODREV,
 }
 
 dependencies = {
    'lua >= 5.1, < 5.4',
-   'std.normalize',
--- 'std.normalize >= 1.0.2',
+   'std.normalize >= 1.0.2',
 }
 
 build = {
