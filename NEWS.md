@@ -2,6 +2,11 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+
+
+
+## Noteworthy changes in release 1.1 (2017-07-07) [stable]
+
 ### New features
 
   - Support type annotations with concat decorators.
