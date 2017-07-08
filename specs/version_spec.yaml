@@ -18,4 +18,4 @@ specify std.version:
   - it describes this module:
       expect (M).to_match "^Gradual Function Typechecks"
   - it ends with the release number:
-      expect (M).to_match " %d[%.%d]*$"
+      expect (M).to_match.any_of {" %d[%.%d]*$", "git"}
