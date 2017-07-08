@@ -17,7 +17,7 @@ description = {
 
 source = {
    url = 'git://github.com/gvvaughan/typecheck.git',
--- url = 'http://github.com/gvvaughan/typecheck/archive/v' .. _MODREV,
+-- url = 'http://github.com/gvvaughan/typecheck/archive/v' .. _MODREV .. '.zip',
 -- dir = 'typecheck-' .. _MODREV,
 }
 
