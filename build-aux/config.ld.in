@@ -24,7 +24,7 @@ license (the same license as Lua itself).  There is no warranty.
 
 dir = '../doc'
 
-file = "../lib/typecheck/init.lua"
+file = '../lib/typecheck/init.lua'
 
 format = 'markdown'
 backtick_references = false

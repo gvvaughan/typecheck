@@ -2,20 +2,20 @@
 # Copyright (C) 2014-2018 Gary V. Vaughan
 
 before:
-  this_module   = "typecheck.version"
+  this_module   = 'typecheck.version'
 
   M = require (this_module)
 
 specify std.version:
 - context when required:
   - it returns a string:
-      expect (type (M)).to_be "string"
+      expect (type (M)).to_be 'string'
   - it does not touch the global table:
-      expect (show_apis {added_to="_G", by=this_module}).
+      expect (show_apis {added_to='_G', by=this_module}).
          to_equal {}
 
 - describe version:
   - it describes this module:
-      expect (M).to_match "^Gradual Function Typechecks"
+      expect (M).to_match '^Gradual Function Typechecks'
   - it ends with the release number:
-      expect (M).to_match.any_of {" %d[%.%d]*$", "git"}
+      expect (M).to_match.any_of {' %d[%.%d]*$', 'git'}

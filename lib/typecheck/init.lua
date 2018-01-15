@@ -17,11 +17,11 @@
  Alternatively, if your project also uses Lua stdlib, this modules still
  respects the `std.debug_init` `_DEBUG` table:
 
-    require "std.debug_init"._DEBUG = false
+    require 'std.debug_init'._DEBUG = false
 
  or:
 
-    require "std.debug_init"._DEBUG = { argcheck = false }
+    require 'std.debug_init'._DEBUG = { argcheck = false }
 
  This mitigates almost all of the overhead of type checking with the
  functions from this module.
@@ -30,14 +30,14 @@
 ]]
 
 
-local _ENV = require "std.normalize" {
-   "io",
-   "math",
-   "string",
-   "table",
+local _ENV = require 'std.normalize' {
+   'io',
+   'math',
+   'string',
+   'table',
 
-   _debug	= "std._debug",
-   _typecheck	= "std.normalize._typecheck",
+   _debug	= 'std._debug',
+   _typecheck	= 'std.normalize._typecheck',
 }
 
 
@@ -70,11 +70,11 @@ end
 
 local function split (s, sep)
    local r, patt = {}
-   if sep == "" then
-      patt = "(.)"
-      table_insert (r, "")
+   if sep == '' then
+      patt = '(.)'
+      table_insert (r, '')
    else
-      patt = "(.-)" .. (sep or "%s+")
+      patt = '(.-)' .. (sep or '%s+')
    end
    local b, slen = 0, len (s)
    while b <= slen do
@@ -92,18 +92,18 @@ end
 --[[ =============================== ]]--
 
 
---- Concatenate a table of strings using ", " and " or " delimiters.
+--- Concatenate a table of strings using ', ' and ' or ' delimiters.
 -- @tparam table alternatives a table of strings
--- @treturn string string of elements from alternatives delimited by ", "
---    and " or "
+-- @treturn string string of elements from alternatives delimited by ', '
+--    and ' or '
 local function concat (alternatives)
    if len (alternatives) > 1 then
       local t = copy (alternatives)
       local top = table_remove (t)
-      t[#t] = t[#t] .. " or " .. top
+      t[#t] = t[#t] .. ' or ' .. top
       alternatives = t
    end
-   return table_concat (alternatives, ", ")
+   return table_concat (alternatives, ', ')
 end
 
 
@@ -116,57 +116,57 @@ local function extramsg_mismatch (expectedtypes, actual, index)
    local actualtype = _type (actual) or type (actual)
 
    -- Tidy up actual type for display.
-   if actualtype == "nil" then
-      actualtype = "no value"
-   elseif actualtype == "string" and actual:sub (1, 1) == ":" then
+   if actualtype == 'nil' then
+      actualtype = 'no value'
+   elseif actualtype == 'string' and actual:sub (1, 1) == ':' then
       actualtype = actual
-   elseif type (actual) == "table" then
-      if actualtype == "table" and (getmetatable (actual) or {}).__call ~= nil then
-         actualtype = "functor"
+   elseif type (actual) == 'table' then
+      if actualtype == 'table' and (getmetatable (actual) or {}).__call ~= nil then
+         actualtype = 'functor'
       elseif next (actual) == nil then
-         local matchstr = "," .. table_concat (expectedtypes, ",") .. ","
-         if actualtype == "table" and matchstr == ",#list," then
-            actualtype = "empty list"
-         elseif actualtype == "table" or matchstr:match ",#" then
-            actualtype = "empty " .. actualtype
+         local matchstr = ',' .. table_concat (expectedtypes, ',') .. ','
+         if actualtype == 'table' and matchstr == ',#list,' then
+            actualtype = 'empty list'
+         elseif actualtype == 'table' or matchstr:match ',#' then
+            actualtype = 'empty ' .. actualtype
          end
       end
    end
 
    if index then
-      actualtype = actualtype .. " at index " .. tostring (index)
+      actualtype = actualtype .. ' at index ' .. tostring (index)
    end
 
    -- Tidy up expected types for display.
    local expectedstr = expectedtypes
-   if type (expectedtypes) == "table" then
+   if type (expectedtypes) == 'table' then
       local t = {}
       for i, v in ipairs (expectedtypes) do
-         if v == "func" then
-            t[i] = "function"
-         elseif v == "bool" then
-            t[i] = "boolean"
-         elseif v == "any" then
-            t[i] = "any value"
-         elseif v == "file" then
-            t[i] = "FILE*"
+         if v == 'func' then
+            t[i] = 'function'
+         elseif v == 'bool' then
+            t[i] = 'boolean'
+         elseif v == 'any' then
+            t[i] = 'any value'
+         elseif v == 'file' then
+            t[i] = 'FILE*'
          elseif not index then
-            t[i] = v:match "(%S+) of %S+" or v
+            t[i] = v:match '(%S+) of %S+' or v
          else
             t[i] = v
          end
       end
-      expectedstr = (concat (t) .. " expected"):
-                     gsub ("#table", "non-empty table"):
-                     gsub ("#list", "non-empty list"):
-                     gsub ("(%S+ of [^,%s]-)s? ", "%1s "):
-                     gsub ("(%S+ of [^,%s]-)s?,", "%1s,"):
-                     gsub ("(s, [^,%s]-)s? ", "%1s "):
-                     gsub ("(s, [^,%s]-)s?,", "%1s,"):
-                     gsub ("(of .-)s? or ([^,%s]-)s? ", "%1s or %2s ")
+      expectedstr = (concat (t) .. ' expected'):
+                     gsub ('#table', 'non-empty table'):
+                     gsub ('#list', 'non-empty list'):
+                     gsub ('(%S+ of [^,%s]-)s? ', '%1s '):
+                     gsub ('(%S+ of [^,%s]-)s?,', '%1s,'):
+                     gsub ('(s, [^,%s]-)s? ', '%1s '):
+                     gsub ('(s, [^,%s]-)s?,', '%1s,'):
+                     gsub ('(of .-)s? or ([^,%s]-)s? ', '%1s or %2s ')
    end
 
-   return expectedstr .. ", got " .. actualtype
+   return expectedstr .. ', got ' .. actualtype
 end
 
 
@@ -176,11 +176,11 @@ end
 -- @treturn boolean `true` if *actual* is of type *check*, otherwise
 --    `false`
 local function checktype (check, actual)
-   if check == "any" and actual ~= nil then
+   if check == 'any' and actual ~= nil then
       return true
-   elseif check == "file" and io_type (actual) == "file" then
+   elseif check == 'file' and io_type (actual) == 'file' then
       return true
-   elseif check == "functor" or check == "callable" then
+   elseif check == 'functor' or check == 'callable' then
       if (getmetatable (actual) or {}).__call ~= nil then
          return true
       end
@@ -189,21 +189,21 @@ local function checktype (check, actual)
    local actualtype = type (actual)
    if check == actualtype then
       return true
-   elseif check == "bool" and actualtype == "boolean" then
+   elseif check == 'bool' and actualtype == 'boolean' then
       return true
-   elseif check == "#table" then
-      if actualtype == "table" and next (actual) then
+   elseif check == '#table' then
+      if actualtype == 'table' and next (actual) then
          return true
       end
-   elseif check == "func" or check == "callable" then
-      if actualtype == "function" then
+   elseif check == 'func' or check == 'callable' then
+      if actualtype == 'function' then
          return true
       end
-   elseif check == "int" then
-      if actualtype == "number" and actual == math_floor (actual) then
+   elseif check == 'int' then
+      if actualtype == 'number' and actual == math_floor (actual) then
          return true
       end
-   elseif type (check) == "string" and check:sub (1, 1) == ":" then
+   elseif type (check) == 'string' and check:sub (1, 1) == ':' then
       if check == actual then
          return true
       end
@@ -212,20 +212,20 @@ local function checktype (check, actual)
    actualtype = _type (actual)
    if check == actualtype then
       return true
-   elseif check == "list" or check == "#list" then
-      if actualtype == "table" or actualtype == "List" then
+   elseif check == 'list' or check == '#list' then
+      if actualtype == 'table' or actualtype == 'List' then
          local len, count = len (actual), 0
          local i = next (actual)
          repeat
             if i ~= nil then count = count + 1 end
             i = next (actual, i)
          until i == nil or count > len
-         if count == len and (check == "list" or count > 0) then
+         if count == len and (check == 'list' or count > 0) then
             return true
          end
       end
-   elseif check == "object" then
-      if actualtype ~= "table" and type (actual) == "table" then
+   elseif check == 'object' then
+      if actualtype ~= 'table' and type (actual) == 'table' then
          return true
       end
    end
@@ -235,12 +235,12 @@ end
 
 
 local function typesplit (types)
-   if type (types) == "string" then
-      types = split (string_gsub (types, "%s+or%s+", "|"), "%s*|%s*")
+   if type (types) == 'string' then
+      types = split (string_gsub (types, '%s+or%s+', '|'), '%s*|%s*')
    end
    local r, seen, add_nil = {}, {}, false
    for _, v in ipairs (types) do
-      local m = string_match (v, "^%?(.+)$")
+      local m = string_match (v, '^%?(.+)$')
       if m then
          add_nil, v = true, m
       end
@@ -250,7 +250,7 @@ local function typesplit (types)
       end
    end
    if add_nil then
-      r[#r + 1] = "nil"
+      r[#r + 1] = 'nil'
    end
    return r
 end
@@ -261,14 +261,14 @@ local function checktypespec (expected, actual)
 
    -- Check actual has one of the types from expected
    for _, expect in ipairs (expected) do
-      local check, contents = string_match (expect, "^(%S+) of (%S-)s?$")
+      local check, contents = string_match (expect, '^(%S+) of (%S-)s?$')
       check = check or expect
 
       -- Does the type of actual check out?
       ok = checktype (check, actual)
 
-      -- For "table of things", check all elements are a thing too.
-      if ok and contents and type (actual) == "table" then
+      -- For 'table of things', check all elements are a thing too.
+      if ok and contents and type (actual) == 'table' then
          for k, v in pairs (actual) do
             if not checktype (contents, v) then
                return nil, extramsg_mismatch (expected, v, k)
@@ -294,15 +294,15 @@ local function resulterror (name, i, extramsg, level)
    level = level or 1
    local s = string_format ("bad result #%d from '%s'", i, name)
    if extramsg ~= nil then
-      s = s .. " (" .. extramsg .. ")"
+      s = s .. ' (' .. extramsg .. ')'
    end
    error (s, level > 0 and level + 1 + ARGCHECK_FRAME or 0)
 end
 
 
 local function extramsg_toomany (bad, expected, actual)
-   local s = "no more than %d %s%s expected, got %d"
-   return string_format (s, expected, bad, expected == 1 and "" or "s", actual)
+   local s = 'no more than %d %s%s expected, got %d'
+   return string_format (s, expected, bad, expected == 1 and '' or 's', actual)
 end
 
 
@@ -312,7 +312,7 @@ end
 -- @string v element added to *t*, to match against ... suffix
 -- @treturn table *t* with ellipsis stripped and maxvalues field set
 local function markdots (t, v)
-   return (string_gsub (v, "%.%.%.$", function () t.dots = true return "" end))
+   return (string_gsub (v, '%.%.%.$', function () t.dots = true return '' end))
 end
 
 
@@ -320,11 +320,11 @@ end
 -- @tparam table t a list of expected types by argument position
 -- @treturn table set of possible type lists
 local function permute (t)
-   if t[#t] then t[#t] = string_gsub (t[#t], "%]%.%.%.$", "...]") end
+   if t[#t] then t[#t] = string_gsub (t[#t], '%]%.%.%.$', '...]') end
 
    local p = {{}}
    for i, v in ipairs (t) do
-      local optional = string_match (v, "%[(.+)%]")
+      local optional = string_match (v, '%[(.+)%]')
 
       if optional == nil then
          -- Append non-optional type-spec to each permutation.
@@ -387,11 +387,11 @@ if _debug.argcheck then
    local function match (typelist, valuelist)
       local n = #typelist
       for i = 1, n do   -- normal parameters
-         local ok = pcall (argcheck, "pcall", i, typelist[i], valuelist[i])
+         local ok = pcall (argcheck, 'pcall', i, typelist[i], valuelist[i])
          if not ok then return i end
       end
       for i = n + 1, valuelist.n do -- additional values against final type
-         local ok = pcall (argcheck, "pcall", i, typelist[n], valuelist[i])
+         local ok = pcall (argcheck, 'pcall', i, typelist[n], valuelist[i])
          if not ok then return i end
       end
    end
@@ -400,7 +400,7 @@ if _debug.argcheck then
    local function empty (t) return not next (t) end
 
    -- Pattern to normalize: [types...] to [types]...
-   local last_pat = "^%[([^%]%.]+)%]?(%.*)%]?"
+   local last_pat = '^%[([^%]%.]+)%]?(%.*)%]?'
 
    --- Diagnose mismatches between *valuelist* and type *permutations*.
    -- @tparam table valuelist list of actual values to be checked
@@ -432,10 +432,10 @@ if _debug.argcheck then
          -- possible permutation (with dots if necessary) at permutations[1].
          local typelist = permutations[1]
 
-         -- For "container of things", check all elements are a thing too.
+         -- For 'container of things', check all elements are a thing too.
          if typelist[i] then
-            local check, contents = string_match (typelist[i], "^(%S+) of (%S-)s?$")
-            if contents and type (valuelist[i]) == "table" then
+            local check, contents = string_match (typelist[i], '^(%S+) of (%S-)s?$')
+            if contents and type (valuelist[i]) == 'table' then
                for k, v in pairs (valuelist[i]) do
                   if not checktype (contents, v) then
                      argt.badtype (i, extramsg_mismatch (expected, v, k), 3)
@@ -468,22 +468,22 @@ if _debug.argcheck then
 
 
    -- Pattern to extract: fname ([types]?[, types]*)
-   local args_pat = "^%s*([%w_][%.%:%d%w_]*)%s*%(%s*(.*)%s*%)"
+   local args_pat = '^%s*([%w_][%.%:%d%w_]*)%s*%(%s*(.*)%s*%)'
 
    function argscheck (decl, inner)
-      -- Parse "fname (argtype, argtype, argtype...)".
+      -- Parse 'fname (argtype, argtype, argtype...)'.
       local fname, argtypes = string_match (decl, args_pat)
-      if argtypes == "" then
+      if argtypes == '' then
          argtypes = {}
       elseif argtypes then
-         argtypes = split (argtypes, "%s*,%s*")
+         argtypes = split (argtypes, '%s*,%s*')
       else
-         fname = string_match (decl, "^%s*([%w_][%.%:%d%w_]*)")
+         fname = string_match (decl, '^%s*([%w_][%.%:%d%w_]*)')
       end
 
       -- Precalculate vtables once to make multiple calls faster.
       local input, output = {
-         bad          = "argument",
+         bad          = 'argument',
          badtype      = function (i, extramsg, level)
                            level = level or 1
                            argerror (fname, i, extramsg, level + 1)
@@ -491,12 +491,12 @@ if _debug.argcheck then
          permutations = permute (argtypes),
       }
 
-      -- Parse "... => returntype, returntype, returntype...".
-      local returntypes = string_match (decl, "=>%s*(.+)%s*$")
+      -- Parse '... => returntype, returntype, returntype...'.
+      local returntypes = string_match (decl, '=>%s*(.+)%s*$')
       if returntypes then
          local i, permutations = 0, {}
-         for _, group in ipairs (split (returntypes, "%s+or%s+")) do
-            returntypes = split (group, ",%s*")
+         for _, group in ipairs (split (returntypes, '%s+or%s+')) do
+            returntypes = split (group, ',%s*')
             for _, t in ipairs (permute (returntypes)) do
                i = i + 1
                permutations[i] = t
@@ -507,7 +507,7 @@ if _debug.argcheck then
          table_sort (permutations, function (a, b) return #a > #b end)
 
          output = {
-            bad          = "result",
+            bad          = 'result',
             badtype      = function (i, extramsg, level)
                               level = level or 1
                               resulterror (fname, i, extramsg, level + 1)
@@ -521,7 +521,7 @@ if _debug.argcheck then
             local argt = pack (...)
 
             -- Don't check type of self if fname has a ':' in it.
-            if string_find (fname, ":") then
+            if string_find (fname, ':') then
                table_remove (argt, 1)
                argt.n = argt.n - 1
             end
@@ -530,7 +530,7 @@ if _debug.argcheck then
             diagnose (argt, input)
 
             -- Propagate outer environment to inner function.
-            if type (my_inner) == "table" then
+            if type (my_inner) == 'table' then
                setfenv ((getmetatable (my_inner) or {}).__call, getfenv (1))
             else
                setfenv (my_inner, getfenv (1))
@@ -603,21 +603,21 @@ return setmetatable ({
    --    list      accept a table where all keys are a contiguous 1-based integer range
    --    #list     accept any non-empty list
    --    object    accept any std.Object derived type
-   --    :foo      accept only the exact string ":foo", works for any :-prefixed string
+   --    :foo      accept only the exact string ':foo', works for any :-prefixed string
    --
    -- The `:foo` format allows for type-checking of self-documenting
    -- boolean-like constant string parameters predicated on `nil` versus
    -- `:option` instead of `false` versus `true`.   Or you could support
    -- both:
    --
-   --    argcheck ("table.copy", 2, "boolean|:nometa|nil", nometa)
+   --    argcheck ('table.copy', 2, 'boolean|:nometa|nil', nometa)
    --
    -- A very common pattern is to have a list of possible types including
-   -- "nil" when the argument is optional.   Rather than writing long-hand
+   -- 'nil' when the argument is optional.   Rather than writing long-hand
    -- as above, prepend a question mark to the list of types and omit the
-   -- explicit "nil" entry:
+   -- explicit 'nil' entry:
    --
-   --     argcheck ("table.copy", 2, "?boolean|:nometa", predicate)
+   --     argcheck ('table.copy', 2, '?boolean|:nometa', predicate)
    --
    -- Normally, you should not need to use the `level` parameter, as the
    -- default is to blame the caller of the function using `argcheck` in
@@ -630,7 +630,7 @@ return setmetatable ({
    -- @int[opt=2] level call stack level to blame for the error
    -- @usage
    --    local function case (with, branches)
-   --       argcheck ("std.functional.case", 2, "#table", branches)
+   --       argcheck ('std.functional.case', 2, '#table', branches)
    --       ...
    argcheck = argcheck,
 
@@ -648,10 +648,10 @@ return setmetatable ({
    -- @usage
    --    local function slurp (file)
    --       local h, err = input_handle (file)
-   --       if h == nil then argerror ("std.io.slurp", 1, err, 2) end
+   --       if h == nil then argerror ('std.io.slurp', 1, err, 2) end
    --       ...
    argerror = _typecheck.argscheck (
-      "argerror", T.stringy, T.integer, T.accept, opt (T.integer)
+      'argerror', T.stringy, T.integer, T.accept, opt (T.integer)
    ) .. _typecheck.argerror,
 
    --- Wrap a function definition with argument type and arity checking.
@@ -660,39 +660,39 @@ return setmetatable ({
    -- *types* ends with an ellipsis, remaining unchecked arguments are checked
    -- against that type:
    --
-   --     format = argscheck ("string.format (string, ?any...)", string.format)
+   --     format = argscheck ('string.format (string, ?any...)', string.format)
    --
    -- A colon in the function name indicates that the argument type list does
    -- not have a type for `self`:
    --
-   --     format = argscheck ("string:format (?any...)", string.format)
+   --     format = argscheck ('string:format (?any...)', string.format)
    --
    -- If an argument can be omitted entirely, then put its type specification
    -- in square brackets:
    --
-   --     insert = argscheck ("table.insert (table, [int], ?any)", table.insert)
+   --     insert = argscheck ('table.insert (table, [int], ?any)', table.insert)
    --
    -- Similarly return types can be checked with the same list syntax as
    -- arguments:
    --
-   --     len = argscheck ("string.len (string) => int", string.len)
+   --     len = argscheck ('string.len (string) => int', string.len)
    --
    -- Additionally, variant return type lists can be listed like this:
    --
-   --     open = argscheck ("io.open (string, ?string) => file or nil, string",
+   --     open = argscheck ('io.open (string, ?string) => file or nil, string',
    --                       io.open)
    --
    -- @function argscheck
    -- @string decl function type declaration string
    -- @func inner function to wrap with argument checking
    -- @usage
-   --    local case = argscheck ("std.functional.case (?any, #table) => [any...]",
+   --    local case = argscheck ('std.functional.case (?any, #table) => [any...]',
    --       function (with, branches)
    --          ...
    --       end)
    --
    --    -- Alternatively, as an annotation:
-   --    local case = argscheck "std.functional.case (?any, #table) => [any...]" ..
+   --    local case = argscheck 'std.functional.case (?any, #table) => [any...]' ..
    --    function (with, branches)
    --       ...
    --    end
@@ -707,7 +707,7 @@ return setmetatable ({
    -- @treturn[2] string an @{extramsg_mismatch} format error message, otherwise
    -- @usage
    --    --> stdin:2: string or number expected, got empty table
-   --    assert (check ("string|number", {}))
+   --    assert (check ('string|number', {}))
    check = checktypespec,
 
    --- Format a type mismatch error.
@@ -719,8 +719,8 @@ return setmetatable ({
    -- @see argerror
    -- @see resulterror
    -- @usage
-   --    if fmt ~= nil and type (fmt) ~= "string" then
-   --       argerror ("format", 1, extramsg_mismatch ("?string", fmt))
+   --    if fmt ~= nil and type (fmt) ~= 'string' then
+   --       argerror ('format', 1, extramsg_mismatch ('?string', fmt))
    --    end
    extramsg_mismatch = function (expected, actual, index)
       return extramsg_mismatch (typesplit (expected), actual, index)
@@ -735,8 +735,8 @@ return setmetatable ({
    -- @see resulterror
    -- @see extramsg_mismatch
    -- @usage
-   --    if select ("#", ...) > 7 then
-   --       argerror ("sevenses", 8, extramsg_toomany ("argument", 7, select ("#", ...)))
+   --    if select ('#', ...) > 7 then
+   --       argerror ('sevenses', 8, extramsg_toomany ('argument', 7, select ('#', ...)))
    --    end
    extramsg_toomany = extramsg_toomany,
 
@@ -760,18 +760,18 @@ return setmetatable ({
    -- @usage
    --    local function slurp (file)
    --       ...
-   --       if type (result) ~= "string" then
-   --          resulterror ("std.io.slurp", 1, err, 2)
+   --       if type (result) ~= 'string' then
+   --          resulterror ('std.io.slurp', 1, err, 2)
    --       end
    resulterror = _typecheck.argscheck (
-      "resulterror", T.stringy, T.integer, T.accept, opt (T.integer)
+      'resulterror', T.stringy, T.integer, T.accept, opt (T.integer)
    ).. resulterror,
 
    --- Split a typespec string into a table of normalized type names.
    -- @function typesplit
    -- @tparam string|table either `"?bool|:nometa"` or `{"boolean", ":nometa"}`
-   -- @treturn table a new list with duplicates removed and leading "?"s
-   --    replaced by a "nil" element
+   -- @treturn table a new list with duplicates removed and leading '?'s
+   --    replaced by a 'nil' element
    typesplit = typesplit,
 
 }, {
@@ -789,7 +789,7 @@ return setmetatable ({
    -- @usage
    --    local version = require 'typecheck'.version
    __index = function (self, name)
-      local ok, t = pcall (require, "typecheck." .. name)
+      local ok, t = pcall (require, 'typecheck.' .. name)
       if ok then
          rawset (self, name, t)
          return t

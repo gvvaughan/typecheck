@@ -129,4 +129,7 @@ points when proposing changes:
 1. 3-character indentation using SPACES in Lua sources: It makes rogue
    TABs easier to see, and lines up nicely with 'if' and 'end' keywords.
 
+2. Simple strings are easiest to type using single-quote delimiters,
+   saving double-quotes for where a string contains apostrophes.
+
 [issues]: http://github.com/gvvaughan/typecheck/issues

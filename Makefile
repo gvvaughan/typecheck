@@ -20,11 +20,11 @@ all: doc $(luadir)/version.lua
 
 
 $(luadir)/version.lua: .FORCE
-	@echo 'return "Gradual Function Typechecks / $(VERSION)"' > '$@T';	\
+	@echo "return 'Gradual Function Typechecks / $(VERSION)'" > '$@T';	\
 	if cmp -s '$@' '$@T'; then						\
 	    rm -f '$@T';							\
 	else									\
-	    echo 'echo "Gradual Function Typechecks / $(VERSION)" > $@';	\
+	    echo "echo 'Gradual Function Typechecks / $(VERSION)' > $@";	\
 	    mv '$@T' '$@';							\
 	fi
 
@@ -32,7 +32,7 @@ doc: build-aux/config.ld $(SOURCES)
 	$(LDOC) -c build-aux/config.ld .
 
 build-aux/config.ld: build-aux/config.ld.in
-	$(SED) -e "s,@PACKAGE_VERSION@,$(VERSION)," '$<' > '$@'
+	$(SED) -e 's,@PACKAGE_VERSION@,$(VERSION),' '$<' > '$@'
 
 
 CHECK_ENV = LUA=$(LUA)
