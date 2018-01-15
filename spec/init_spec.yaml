@@ -385,7 +385,9 @@ specify typecheck:
       List = setmetatable({}, { _type = 'List', __call = clone})
       Foo = setmetatable({}, { _type = 'Foo', __call = clone })
 
-      function fn(...) return M.argcheck('expect', 1, ...) end
+      function fn(...)
+         return M.argcheck('expect', 1, ...)
+      end
 
       preamble = [[
          local typecheck = require 'typecheck'             -- line 2
@@ -833,11 +835,15 @@ specify typecheck:
 
       f = M.argscheck
 
-      mkmagic = function() return 'MAGIC' end
+      mkmagic = function()
+         return 'MAGIC'
+      end
       wrapped = f('inner()', mkmagic)
 
       _, badarg, badresult = init(M, '', 'inner')
-      id = function(...) return ... end
+      id = function(...)
+         return ...
+      end
 
   - it returns the wrapped function:
       expect(wrapped).not_to_be(inner)
@@ -846,7 +852,9 @@ specify typecheck:
       script = [[
          require 'std._debug'(false)
          local argscheck = require 'typecheck'.argscheck
-         local function inner() return 'MAGIC' end
+         local function inner()
+            return 'MAGIC'
+         end
          local wrapped = argscheck('inner(?any)', inner)
          os.exit(wrapped == inner and 0 or 1)
       ]]
@@ -862,7 +870,9 @@ specify typecheck:
         script = [[
            require 'std._debug'(false)
            local argscheck = require 'typecheck'.argscheck
-           local function inner() return 'MAGIC' end
+           local function inner()
+              return 'MAGIC'
+           end
            local wrapped = argscheck 'inner(?any)' .. inner
            os.exit(wrapped == inner and 0 or 1)
         ]]

@@ -62,8 +62,12 @@ local table_sort = table.sort
 
 
 local function copy(dest, src)
-   if src == nil then dest, src = {}, dest end
-   for k, v in pairs(src) do dest[k] = v end
+   if src == nil then
+      dest, src = {}, dest
+   end
+   for k, v in pairs(src) do
+      dest[k] = v
+   end
    return dest
 end
 
@@ -217,7 +221,9 @@ local function checktype(check, actual)
          local len, count = len(actual), 0
          local i = next(actual)
          repeat
-            if i ~= nil then count = count + 1 end
+            if i ~= nil then
+               count = count + 1
+            end
             i = next(actual, i)
          until i == nil or count > len
          if count == len and (check == 'list' or count > 0) then
@@ -312,7 +318,9 @@ end
 -- @string v element added to *t*, to match against ... suffix
 -- @treturn table *t* with ellipsis stripped and maxvalues field set
 local function markdots(t, v)
-   return (string_gsub(v, '%.%.%.$', function() t.dots = true return '' end))
+   return (string_gsub(v, '%.%.%.$', function()
+      t.dots = true return ''
+   end))
 end
 
 
@@ -320,7 +328,9 @@ end
 -- @tparam table t a list of expected types by argument position
 -- @treturn table set of possible type lists
 local function permute(t)
-   if t[#t] then t[#t] = string_gsub(t[#t], '%]%.%.%.$', '...]') end
+   if t[#t] then
+      t[#t] = string_gsub(t[#t], '%]%.%.%.$', '...]')
+   end
 
    local p = {{}}
    for i, v in ipairs(t) do
@@ -388,16 +398,22 @@ if _debug.argcheck then
       local n = #typelist
       for i = 1, n do   -- normal parameters
          local ok = pcall(argcheck, 'pcall', i, typelist[i], valuelist[i])
-         if not ok then return i end
+         if not ok then
+            return i
+         end
       end
       for i = n + 1, valuelist.n do -- additional values against final type
          local ok = pcall(argcheck, 'pcall', i, typelist[n], valuelist[i])
-         if not ok then return i end
+         if not ok then
+            return i
+         end
       end
    end
 
 
-   local function empty(t) return not next(t) end
+   local function empty(t)
+      return not next(t)
+   end
 
    -- Pattern to normalize: [types...] to [types]...
    local last_pat = '^%[([^%]%.]+)%]?(%.*)%]?'
@@ -504,7 +520,9 @@ if _debug.argcheck then
          end
 
          -- Ensure the longest permutation is first in the list.
-         table_sort(permutations, function(a, b) return #a > #b end)
+         table_sort(permutations, function(a, b)
+            return #a > #b
+         end)
 
          output = {
             bad = 'result',
@@ -564,7 +582,9 @@ else
    -- Turn off argument checking if _debug is false, or a table containing
    -- a false valued `argcheck` field.
 
-   argcheck = function(...) return ... end
+   argcheck = function(...)
+      return ...
+   end
    argscheck = function(decl, inner)
       if inner then
          return inner
@@ -648,7 +668,9 @@ return setmetatable({
    -- @usage
    --    local function slurp(file)
    --       local h, err = input_handle(file)
-   --       if h == nil then argerror('std.io.slurp', 1, err, 2) end
+   --       if h == nil then
+   --          argerror('std.io.slurp', 1, err, 2)
+   --       end
    --       ...
    argerror = _typecheck.argscheck(
       'argerror', T.stringy, T.integer, T.accept, opt(T.integer)

@@ -25,7 +25,10 @@ local unpack = table.unpack or unpack
 
 -- In case we're not using a bleeding edge release of Specl...
 badargs.result = badargs.result or function(fname, i, want, got)
-   if want == nil then i, want =   i - 1, i end -- numbers only for narg error
+   if want == nil then
+      -- numbers only for narg error
+      i, want =   i - 1, i
+   end
 
    if got == nil and type(want) == 'number' then
       local s = "bad result #%d from '%s' (no more than %d result%s expected, got %d)"
@@ -55,8 +58,12 @@ end
 function init(M, mname, fname)
    local name = (mname .. '.' .. fname):gsub('^%.', '')
    return M[fname],
-             function(...) return badargs.format(name, ...) end,
-             function(...) return badargs.result(name, ...) end
+      function(...)
+         return badargs.format(name, ...)
+      end,
+      function(...)
+         return badargs.result(name, ...)
+      end
 end
 
 
@@ -78,7 +85,9 @@ end
 --    execution was successful, otherwise nil
 function luaproc(code, arg, stdin)
    local f = mkscript(code)
-   if type(arg) ~= 'table' then arg = {arg} end
+   if type(arg) ~= 'table' then
+      arg = {arg}
+   end
    local cmd = {LUA, f, unpack(arg, 1, #arg)}
    -- inject env and stdin keys separately to avoid truncating `...` in
    -- cmd constructor
@@ -92,11 +101,15 @@ end
 
 local function tabulate_output(code)
    local proc = luaproc(code)
-   if proc.status ~= 0 then return error(proc.errout) end
+   if proc.status ~= 0 then
+      return error(proc.errout)
+   end
    local r = {}
    proc.output:gsub('(%S*)[%s]*',
       function(x)
-         if x ~= '' then r[x] = true end
+         if x ~= '' then
+            r[x] = true
+         end
       end)
    return r
 end
@@ -137,7 +150,9 @@ function show_apis(argt)
       end
 
       for k in pairs(after) do
-         if not before[k] then print(k) end
+         if not before[k] then
+            print(k)
+         end
       end
    ]])
 end
