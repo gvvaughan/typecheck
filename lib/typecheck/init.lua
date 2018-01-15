@@ -31,30 +31,25 @@
 
 
 local _ENV = require 'std.normalize' {
-   'io',
-   'math',
-   'string',
-   'table',
+   'math.floor',
+   'std._debug',
+   'std.normalize._typecheck',
+   'string.find',
+   'string.format',
+   'string.gsub',
+   'string.match',
+   'string.sub',
+   'table.concat',
+   'table.insert',
+   'table.remove',
+   'table.sort',
 
-   _debug = 'std._debug',
-   _typecheck = 'std.normalize._typecheck',
+   io_type = 'io.type',
 }
 
 
 local ARGCHECK_FRAME = _typecheck.ARGCHECK_FRAME
 
-
-local io_type = io.type
-local math_floor = math.floor
-local string_find = string.find
-local string_format = string.format
-local string_gsub = string.gsub
-local string_match = string.match
-local string_sub = string.sub
-local table_concat = table.concat
-local table_insert = table.insert
-local table_remove = table.remove
-local table_sort = table.sort
 
 
 --[[ ================= ]]--
@@ -77,14 +72,14 @@ local function split(s, sep)
    local r, patt = {}
    if sep == '' then
       patt = '(.)'
-      table_insert(r, '')
+      r[#r + 1] = ''
    else
       patt = '(.-)' ..(sep or '%s+')
    end
    local b, slen = 0, len(s)
    while b <= slen do
-      local e, n, m = string_find(s, patt, b + 1)
-      table_insert(r, m or string_sub(s, b + 1, slen))
+      local e, n, m = find(s, patt, b + 1)
+      r[#r + 1] = m or sub(s, b + 1, slen)
       b = n   or slen + 1
    end
    return r
@@ -101,14 +96,14 @@ end
 -- @tparam table alternatives a table of strings
 -- @treturn string string of elements from alternatives delimited by ', '
 --    and ' or '
-local function concat(alternatives)
+local function orconcat(alternatives)
    if len(alternatives) > 1 then
       local t = copy(alternatives)
-      local top = table_remove(t)
+      local top = remove(t)
       t[#t] = t[#t] .. ' or ' .. top
       alternatives = t
    end
-   return table_concat(alternatives, ', ')
+   return concat(alternatives, ', ')
 end
 
 
@@ -119,7 +114,7 @@ end
 
 local function extramsg_gsub(match, replace)
    return function(s)
-      return (string_gsub(s, match, replace))
+      return (gsub(s, match, replace))
    end
 end
 
@@ -141,16 +136,16 @@ local function extramsg_mismatch(expectedtypes, actual, index)
    -- Tidy up actual type for display.
    if actualtype == 'nil' then
       actualtype = 'no value'
-   elseif actualtype == 'string' and string_sub(actual, 1, 1) == ':' then
+   elseif actualtype == 'string' and sub(actual, 1, 1) == ':' then
       actualtype = actual
    elseif type(actual) == 'table' then
       if actualtype == 'table' and (getmetatable(actual) or {}).__call ~= nil then
          actualtype = 'functor'
       elseif next(actual) == nil then
-         local matchstr = ',' .. table_concat(expectedtypes, ',') .. ','
+         local matchstr = ',' .. concat(expectedtypes, ',') .. ','
          if actualtype == 'table' and matchstr == ',#list,' then
             actualtype = 'empty list'
-         elseif actualtype == 'table' or string_match(matchstr, ',#') then
+         elseif actualtype == 'table' or match(matchstr, ',#') then
             actualtype = 'empty ' .. actualtype
          end
       end
@@ -174,12 +169,12 @@ local function extramsg_mismatch(expectedtypes, actual, index)
          elseif v == 'file' then
             t[i] = 'FILE*'
          elseif not index then
-            t[i] = string_match(v, '(%S+) of %S+') or v
+            t[i] = match(v, '(%S+) of %S+') or v
          else
             t[i] = v
          end
       end
-      expectedstr = concat(t) .. ' expected'
+      expectedstr = orconcat(t) .. ' expected'
       for _, fn in ipairs(EXTRAMSG_XFORMS) do
          expectedstr = fn(expectedstr)
       end
@@ -219,10 +214,10 @@ local function checktype(check, actual)
          return true
       end
    elseif check == 'int' then
-      if actualtype == 'number' and actual == math_floor(actual) then
+      if actualtype == 'number' and actual == floor(actual) then
          return true
       end
-   elseif type(check) == 'string' and string_sub(check, 1, 1) == ':' then
+   elseif type(check) == 'string' and sub(check, 1, 1) == ':' then
       if check == actual then
          return true
       end
@@ -257,11 +252,11 @@ end
 
 local function typesplit(types)
    if type(types) == 'string' then
-      types = split(string_gsub(types, '%s+or%s+', '|'), '%s*|%s*')
+      types = split(gsub(types, '%s+or%s+', '|'), '%s*|%s*')
    end
    local r, seen, add_nil = {}, {}, false
    for _, v in ipairs(types) do
-      local m = string_match(v, '^%?(.+)$')
+      local m = match(v, '^%?(.+)$')
       if m then
          add_nil, v = true, m
       end
@@ -282,7 +277,7 @@ local function checktypespec(expected, actual)
 
    -- Check actual has one of the types from expected
    for _, expect in ipairs(expected) do
-      local check, contents = string_match(expect, '^(%S+) of (%S-)s?$')
+      local check, contents = match(expect, '^(%S+) of (%S-)s?$')
       check = check or expect
 
       -- Does the type of actual check out?
@@ -313,7 +308,7 @@ end
 
 local function resulterror(name, i, extramsg, level)
    level = level or 1
-   local s = string_format("bad result #%d from '%s'", i, name)
+   local s = format("bad result #%d from '%s'", i, name)
    if extramsg ~= nil then
       s = s .. ' (' .. extramsg .. ')'
    end
@@ -323,7 +318,7 @@ end
 
 local function extramsg_toomany(bad, expected, actual)
    local s = 'no more than %d %s%s expected, got %d'
-   return string_format(s, expected, bad, expected == 1 and '' or 's', actual)
+   return format(s, expected, bad, expected == 1 and '' or 's', actual)
 end
 
 
@@ -333,7 +328,7 @@ end
 -- @string v element added to *t*, to match against ... suffix
 -- @treturn table *t* with ellipsis stripped and maxvalues field set
 local function markdots(t, v)
-   return (string_gsub(v, '%.%.%.$', function()
+   return (gsub(v, '%.%.%.$', function()
       t.dots = true return ''
    end))
 end
@@ -344,17 +339,17 @@ end
 -- @treturn table set of possible type lists
 local function permute(t)
    if t[#t] then
-      t[#t] = string_gsub(t[#t], '%]%.%.%.$', '...]')
+      t[#t] = gsub(t[#t], '%]%.%.%.$', '...]')
    end
 
    local p = {{}}
    for i, v in ipairs(t) do
-      local optional = string_match(v, '%[(.+)%]')
+      local optional = match(v, '%[(.+)%]')
 
       if optional == nil then
          -- Append non-optional type-spec to each permutation.
          for b = 1, #p do
-            table_insert(p[b], markdots(p[b], v))
+            insert(p[b], markdots(p[b], v))
          end
       else
          -- Duplicate all existing permutations, and add optional type-spec
@@ -362,7 +357,7 @@ local function permute(t)
          local o = #p
          for b = 1, o do
             p[b + o] = copy(p[b])
-            table_insert(p[b], markdots(p[b], optional))
+            insert(p[b], markdots(p[b], optional))
          end
       end
    end
@@ -409,7 +404,7 @@ if _debug.argcheck then
    -- @tparam table typelist a list of expected types
    -- @tparam table valuelist a table of arguments to compare
    -- @treturn int|nil position of first mismatch in *typelist*
-   local function match(typelist, valuelist)
+   local function typematch(typelist, valuelist)
       local n = #typelist
       for i = 1, n do   -- normal parameters
          local ok = pcall(argcheck, 'pcall', i, typelist[i], valuelist[i])
@@ -441,7 +436,7 @@ if _debug.argcheck then
 
       local bestmismatch, t = 0
       for i, typelist in ipairs(permutations) do
-         local mismatch = match(typelist, valuelist)
+         local mismatch = typematch(typelist, valuelist)
          if mismatch == nil then
             bestmismatch, t = nil, nil
             break -- every *valuelist* matched types from this *typelist*
@@ -465,7 +460,7 @@ if _debug.argcheck then
 
          -- For 'container of things', check all elements are a thing too.
          if typelist[i] then
-            local check, contents = string_match(typelist[i], '^(%S+) of (%S-)s?$')
+            local check, contents = match(typelist[i], '^(%S+) of (%S-)s?$')
             if contents and type(valuelist[i]) == 'table' then
                for k, v in pairs(valuelist[i]) do
                   if not checktype(contents, v) then
@@ -503,13 +498,13 @@ if _debug.argcheck then
 
    function argscheck(decl, inner)
       -- Parse 'fname(argtype, argtype, argtype...)'.
-      local fname, argtypes = string_match(decl, args_pat)
+      local fname, argtypes = match(decl, args_pat)
       if argtypes == '' then
          argtypes = {}
       elseif argtypes then
          argtypes = split(argtypes, '%s*,%s*')
       else
-         fname = string_match(decl, '^%s*([%w_][%.%:%d%w_]*)')
+         fname = match(decl, '^%s*([%w_][%.%:%d%w_]*)')
       end
 
       -- Precalculate vtables once to make multiple calls faster.
@@ -523,7 +518,7 @@ if _debug.argcheck then
       }
 
       -- Parse '... => returntype, returntype, returntype...'.
-      local returntypes = string_match(decl, '=>%s*(.+)%s*$')
+      local returntypes = match(decl, '=>%s*(.+)%s*$')
       if returntypes then
          local i, permutations = 0, {}
          for _, group in ipairs(split(returntypes, '%s+or%s+')) do
@@ -535,7 +530,7 @@ if _debug.argcheck then
          end
 
          -- Ensure the longest permutation is first in the list.
-         table_sort(permutations, function(a, b)
+         sort(permutations, function(a, b)
             return #a > #b
          end)
 
@@ -554,8 +549,8 @@ if _debug.argcheck then
             local argt = pack(...)
 
             -- Don't check type of self if fname has a ':' in it.
-            if string_find(fname, ':') then
-               table_remove(argt, 1)
+            if find(fname, ':') then
+               remove(argt, 1)
                argt.n = argt.n - 1
             end
 
