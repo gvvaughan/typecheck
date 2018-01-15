@@ -56,10 +56,10 @@ specify typecheck:
       expect (f ("another", 3, "oh noes")).
         to_raise "bad result #3 from 'another' (oh noes)"
 
-  - context global _DEBUG is nil:
+  - context std._debug is not set:
     - before: |
         shamble = [[
-          _DEBUG = nil                             -- line 1
+          require 'std._debug' (nil)               -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -77,10 +77,10 @@ specify typecheck:
           caller (0)                               -- line 10
         ]])).to_fail_while_matching "^[^:]+: bad result"
 
-  - context global _DEBUG is false:
+  - context std._debug set to false:
     - before: |
         shamble = [[
-          _DEBUG = false                           -- line 1
+          require 'std._debug' (false)             -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -98,10 +98,10 @@ specify typecheck:
           caller (0)                               -- line 10
         ]])).to_fail_while_matching "^[^:]+: bad result"
 
-  - context global _DEBUG is true:
+  - context std._debug set to true:
     - before: |
         shamble = [[
-          _DEBUG = true                            -- line 1
+          require 'std._debug' (true)              -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -119,10 +119,10 @@ specify typecheck:
           caller (0)                               -- line 10
         ]])).to_fail_while_matching "^[^:]+: bad result"
 
-  - context global _DEBUG.argcheck is nil:
+  - context std._debug argcheck hint is nil:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = nil }              -- line 1
+          require 'std._debug'.argcheck = nil      -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -140,10 +140,10 @@ specify typecheck:
           caller (0)                               -- line 10
         ]])).to_fail_while_matching "^[^:]+: bad result"
 
-  - context global _DEBUG.argcheck is false:
+  - context std._debug argcheck hint is false:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = false }            -- line 1
+          require 'std._debug'.argcheck = false    -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -161,10 +161,10 @@ specify typecheck:
           caller (0)                               -- line 10
         ]])).to_fail_while_matching "^[^:]+: bad result"
 
-  - context global _DEBUG.argcheck is true:
+  - context std._debug argcheck hint is true:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = true }             -- line 1
+          require 'std._debug'.argcheck = true     -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -230,10 +230,10 @@ specify typecheck:
       expect (f ("another", 3, "oh noes")).
         to_raise "bad argument #3 to 'another' (oh noes)"
 
-  - context global _DEBUG is nil:
+  - context std._debug set to nil:
     - before: |
         shamble = [[
-          _DEBUG = nil                             -- line 1
+          require 'std._debug' (nil)               -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -254,10 +254,10 @@ specify typecheck:
           caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
-  - context global _DEBUG is false:
+  - context std._debug set to false:
     - before: |
         shamble = [[
-          _DEBUG = false                           -- line 1
+          require 'std._debug' (false)             -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -278,10 +278,10 @@ specify typecheck:
           caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
-  - context global _DEBUG is true:
+  - context std._debug set to true:
     - before: |
         shamble = [[
-          _DEBUG = true                            -- line 1
+          require 'std._debug' (true)              -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -302,10 +302,10 @@ specify typecheck:
           caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
-  - context global _DEBUG.argcheck is nil:
+  - context std._debug argcheck hint is nil:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = nil }              -- line 1
+          require 'std._debug'.argcheck = nil      -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -326,10 +326,10 @@ specify typecheck:
           caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
-  - context global _DEBUG.argcheck is false:
+  - context std._debug argcheck hint is false:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = false }            -- line 1
+          require 'std._debug'.argcheck = false    -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -350,10 +350,10 @@ specify typecheck:
           caller (0)                               -- line 14
         ]])).to_fail_while_matching "^[^:]+: bad argument"
 
-  - context global _DEBUG.argcheck is true:
+  - context std._debug argcheck hint is true:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = true }             -- line 1
+          require 'std._debug'.argcheck = true     -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -404,10 +404,10 @@ specify typecheck:
 
       f, badarg = init (M, this_module, "argcheck")
 
-  - context global _DEBUG is nil:
+  - context std._debug set to nil:
     - before: |
         shamble = [[
-          _DEBUG = nil                                    -- line 1
+          require 'std._debug' (nil)                      -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -424,10 +424,10 @@ specify typecheck:
           caller (3)                                      -- line 14
         ]])).to_contain_error ":14: bad argument"
 
-  - context global _DEBUG is false:
+  - context std._debug set to false:
     - before: |
         shamble = [[
-          _DEBUG = false                                  -- line 1
+          require 'std._debug' (false)                    -- line 1
         ]] .. preamble
     - it is disabled:
         expect (luaproc (shamble .. [[
@@ -443,10 +443,10 @@ specify typecheck:
           caller (3)                                      -- line 14
         ]])).not_to_contain_error "bad argument"
 
-  - context global _DEBUG is true:
+  - context std._debug set to true:
     - before: |
         shamble = [[
-          _DEBUG = true                                   -- line 1
+          require 'std._debug' (true)                     -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -463,10 +463,10 @@ specify typecheck:
           caller (3)                                      -- line 14
         ]])).to_contain_error ":14: bad argument"
 
-  - context global _DEBUG.argcheck is nil:
+  - context std._debug argcheck hint is nil:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = nil }                     -- line 1
+          require 'std._debug'.argcheck = nil             -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -483,10 +483,10 @@ specify typecheck:
           caller (3)                                      -- line 14
         ]])).to_contain_error ":14: bad argument"
 
-  - context global _DEBUG.argcheck is false:
+  - context std._debug argcheck hint is false:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = false }                   -- line 1
+          require 'std._debug'.argcheck = false           -- line 1
         ]] .. preamble
     - it is disabled: |
         expect (luaproc (shamble .. [[
@@ -502,10 +502,10 @@ specify typecheck:
           caller (3)                                      -- line 14
         ]])).not_to_contain_error "bad argument"
 
-  - context global _DEBUG.argcheck is true:
+  - context std._debug argcheck hint is true:
     - before: |
         shamble = [[
-          _DEBUG = { argcheck = true }                    -- line 1
+          require 'std._debug'.argcheck = true           -- line 1
         ]] .. preamble
     - it blames the call site by default: |
         expect (luaproc (shamble .. [[
@@ -844,7 +844,7 @@ specify typecheck:
       expect (wrapped ()).to_be "MAGIC"
   - it does not wrap the function when _ARGCHECK is disabled: |
       script = [[
-        _DEBUG = false
+        require 'std._debug' (false)
         local argscheck = require "typecheck".argscheck
         local function inner () return "MAGIC" end
         local wrapped = argscheck ("inner (?any)", inner)
@@ -860,7 +860,7 @@ specify typecheck:
         expect (wrapped ()).to_be "MAGIC"
     - it does not wrap the function when _ARGCHECK is disabled: |
         script = [[
-          _DEBUG = false
+          require 'std._debug' (false)
           local argscheck = require "typecheck".argscheck
           local function inner () return "MAGIC" end
           local wrapped = argscheck "inner (?any)" .. inner

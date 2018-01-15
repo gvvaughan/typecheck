@@ -36,7 +36,7 @@ local _ENV = require "std.normalize" {
   "string",
   "table",
 
-  _DEBUG	= "std.normalize._debug",
+  _debug	= "std._debug",
   _typecheck	= "std.normalize._typecheck",
 }
 
@@ -378,7 +378,7 @@ end
 
 local argcheck, argscheck  -- forward declarations
 
-if _DEBUG.argcheck then
+if _debug.argcheck then
 
   --- Return index of the first mismatch between types and values, or `nil`.
   -- @tparam table typelist a list of expected types
@@ -561,7 +561,7 @@ if _DEBUG.argcheck then
 
 else
 
-  -- Turn off argument checking if _DEBUG is false, or a table containing
+  -- Turn off argument checking if _debug is false, or a table containing
   -- a false valued `argcheck` field.
 
   argcheck  = function (...) return ... end
