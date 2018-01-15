@@ -1,3 +1,8 @@
+--[[
+ Gradual Function Type Checking for Lua 5.1, 5.2 & 5.3.
+ Copyright (C) Gary V. Vaughan 2014-2018
+]]
+
 local _MODREV, _SPECREV = 'git', '-1'
 
 package = 'typecheck'
