@@ -12,7 +12,7 @@ specify std.version:
       expect (type (M)).to_be "string"
   - it does not touch the global table:
       expect (show_apis {added_to="_G", by=this_module}).
-        to_equal {}
+         to_equal {}
 
 - describe version:
   - it describes this module:

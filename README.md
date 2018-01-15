@@ -65,8 +65,8 @@ types in that argument:
     local argcheck = require "typecheck".argcheck
 
     local function case (with, branches)
-      argcheck ("std.functional.case", 2, "#table", branches)
-      ...
+       argcheck ("std.functional.case", 2, "#table", branches)
+       ...
 ```
 
 Or more comprehensively, wrap exported functions to raise an error if
@@ -74,8 +74,8 @@ the return or argument types do not meet your specification:
 
 ```lua
     return {
-      len = argscheck ("string.len (string) => int", string.len),
-      ...
+       len = argscheck ("string.len (string) => int", string.len),
+       ...
 ```
 
 Alternatively, argscheck can be used as an annotation, which makes it
@@ -84,7 +84,7 @@ look nicer when used at declaration time:
 ```lua
     local my_function = argscheck "my_function (int, int) => int" ..
     function (a, b)
-      return a + b
+       return a + b
     end
 ```
 
@@ -126,6 +126,7 @@ points when proposing changes:
 0. Follow existing code. There are a lot of useful patterns and avoided
    traps there.
 
-1. 2-character indentation using SPACES in Lua sources.
+1. 3-character indentation using SPACES in Lua sources: It makes rogue
+   TABs easier to see, and lines up nicely with 'if' and 'end' keywords.
 
 [issues]: http://github.com/gvvaughan/typecheck/issues
