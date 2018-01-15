@@ -50,6 +50,7 @@ local string_find = string.find
 local string_format = string.format
 local string_gsub = string.gsub
 local string_match = string.match
+local string_sub = string.sub
 local table_concat = table.concat
 local table_insert = table.insert
 local table_remove = table.remove
@@ -83,7 +84,7 @@ local function split(s, sep)
    local b, slen = 0, len(s)
    while b <= slen do
       local e, n, m = string_find(s, patt, b + 1)
-      table_insert(r, m or s:sub(b + 1, slen))
+      table_insert(r, m or string_sub(s, b + 1, slen))
       b = n   or slen + 1
    end
    return r
@@ -116,13 +117,31 @@ local function _type(x)
 end
 
 
+local function extramsg_gsub(match, replace)
+   return function(s)
+      return (string_gsub(s, match, replace))
+   end
+end
+
+
+local EXTRAMSG_XFORMS = {
+   extramsg_gsub('#table', 'non-empty table'),
+   extramsg_gsub('#list', 'non-empty list'),
+   extramsg_gsub('(%S+ of [^,%s]-)s? ', '%1s '),
+   extramsg_gsub('(%S+ of [^,%s]-)s?,', '%1s,'),
+   extramsg_gsub('(s, [^,%s]-)s? ', '%1s '),
+   extramsg_gsub('(s, [^,%s]-)s?,', '%1s,'),
+   extramsg_gsub('(of .-)s? or ([^,%s]-)s? ', '%1s or %2s '),
+}
+
+
 local function extramsg_mismatch(expectedtypes, actual, index)
    local actualtype = _type(actual) or type(actual)
 
    -- Tidy up actual type for display.
    if actualtype == 'nil' then
       actualtype = 'no value'
-   elseif actualtype == 'string' and actual:sub(1, 1) == ':' then
+   elseif actualtype == 'string' and string_sub(actual, 1, 1) == ':' then
       actualtype = actual
    elseif type(actual) == 'table' then
       if actualtype == 'table' and (getmetatable(actual) or {}).__call ~= nil then
@@ -131,7 +150,7 @@ local function extramsg_mismatch(expectedtypes, actual, index)
          local matchstr = ',' .. table_concat(expectedtypes, ',') .. ','
          if actualtype == 'table' and matchstr == ',#list,' then
             actualtype = 'empty list'
-         elseif actualtype == 'table' or matchstr:match ',#' then
+         elseif actualtype == 'table' or string_match(matchstr, ',#') then
             actualtype = 'empty ' .. actualtype
          end
       end
@@ -155,19 +174,15 @@ local function extramsg_mismatch(expectedtypes, actual, index)
          elseif v == 'file' then
             t[i] = 'FILE*'
          elseif not index then
-            t[i] = v:match '(%S+) of %S+' or v
+            t[i] = string_match(v, '(%S+) of %S+') or v
          else
             t[i] = v
          end
       end
-      expectedstr = (concat(t) .. ' expected'):
-                     gsub('#table', 'non-empty table'):
-                     gsub('#list', 'non-empty list'):
-                     gsub('(%S+ of [^,%s]-)s? ', '%1s '):
-                     gsub('(%S+ of [^,%s]-)s?,', '%1s,'):
-                     gsub('(s, [^,%s]-)s? ', '%1s '):
-                     gsub('(s, [^,%s]-)s?,', '%1s,'):
-                     gsub('(of .-)s? or ([^,%s]-)s? ', '%1s or %2s ')
+      expectedstr = concat(t) .. ' expected'
+      for _, fn in ipairs(EXTRAMSG_XFORMS) do
+         expectedstr = fn(expectedstr)
+      end
    end
 
    return expectedstr .. ', got ' .. actualtype
@@ -207,7 +222,7 @@ local function checktype(check, actual)
       if actualtype == 'number' and actual == math_floor(actual) then
          return true
       end
-   elseif type(check) == 'string' and check:sub(1, 1) == ':' then
+   elseif type(check) == 'string' and string_sub(check, 1, 1) == ':' then
       if check == actual then
          return true
       end

@@ -23,6 +23,27 @@ function nop() end
 local unpack = table.unpack or unpack
 
 
+local function xform_gsub(match, replace)
+   return function(s)
+      return (string.gsub(s, match, replace))
+   end
+end
+
+
+local XFORMS = {
+   xform_gsub('|%?', '|nil|'),
+   xform_gsub('|nil|', '|no value|'),
+   xform_gsub('|any|', '|any value|'),
+   xform_gsub('|#', '|non-empty '),
+   xform_gsub('|func|', '|function|'),
+   xform_gsub('|file|', '|FILE*|'),
+   xform_gsub('^|', ''),
+   xform_gsub('|$', ''),
+   xform_gsub('|([^|]+)$', 'or %1'),
+   xform_gsub('|', ', '),
+}
+
+
 -- In case we're not using a bleeding edge release of Specl...
 badargs.result = badargs.result or function(fname, i, want, got)
    if want == nil then
@@ -32,21 +53,15 @@ badargs.result = badargs.result or function(fname, i, want, got)
 
    if got == nil and type(want) == 'number' then
       local s = "bad result #%d from '%s' (no more than %d result%s expected, got %d)"
-      return s:format(i + 1, fname, i, i == 1 and '' or 's', want)
+      return string.format(s, i + 1, fname, i, i == 1 and '' or 's', want)
    end
 
    local function showarg(s)
-      return('|' .. s .. '|'):
-             gsub('|%?', '|nil|'):
-             gsub('|nil|', '|no value|'):
-             gsub('|any|', '|any value|'):
-             gsub('|#', '|non-empty '):
-             gsub('|func|', '|function|'):
-             gsub('|file|', '|FILE*|'):
-             gsub('^|', ''):
-             gsub('|$', ''):
-             gsub('|([^|]+)$', 'or %1'):
-             gsub('|', ', ')
+      local r = '|' .. s .. '|'
+      for _, fn in ipairs(XFORMS) do
+         r = fn(r)
+      end
+      return r
    end
 
    return string.format("bad result #%d from '%s' (%s expected, got %s)",
@@ -56,7 +71,7 @@ end
 
 -- Wrap up badargs function in a succinct single call.
 function init(M, mname, fname)
-   local name = (mname .. '.' .. fname):gsub('^%.', '')
+   local name = string.gsub(mname .. '.' .. fname, '^%.', '')
    return M[fname],
       function(...)
          return badargs.format(name, ...)
@@ -105,12 +120,11 @@ local function tabulate_output(code)
       return error(proc.errout)
    end
    local r = {}
-   proc.output:gsub('(%S*)[%s]*',
-      function(x)
-         if x ~= '' then
-            r[x] = true
-         end
-      end)
+   string.gsub(proc.output, '(%S*)[%s]*', function(x)
+      if x ~= '' then
+         r[x] = true
+      end
+   end)
    return r
 end
 
