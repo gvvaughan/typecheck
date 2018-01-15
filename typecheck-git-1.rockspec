@@ -20,17 +20,27 @@ description = {
    license = 'MIT/X11',
 }
 
-source = {
-   url = 'git://github.com/gvvaughan/typecheck.git',
--- url = 'http://github.com/gvvaughan/typecheck/archive/v' .. _MODREV .. '.zip',
--- dir = 'typecheck-' .. _MODREV,
-}
+source = (function(gitp)
+   if gitp then
+      return {
+         url = 'git://github.com/gvvaughan/typecheck.git',
+      }
+   else
+      return {
+         url = 'http://github.com/gvvaughan/typecheck/archive/v' .. _MODREV .. '.zip',
+         dir = 'typecheck-' .. _MODREV,
+      }
+   end
+end)(_MODREV == 'git')
 
 dependencies = {
    'lua >= 5.1, < 5.4',
    'std.normalize >= 2.0.1',
-   'ldoc',
 }
+
+if _MODREV == 'git' then
+   dependencies[#dependencies + 1] = 'ldoc'
+end
 
 build = {
    type = 'builtin',
