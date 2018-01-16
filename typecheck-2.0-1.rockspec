@@ -3,7 +3,7 @@
  Copyright (C) Gary V. Vaughan 2014-2018
 ]]
 
-local _MODREV, _SPECREV = 'git', '-1'
+local _MODREV, _SPECREV = '2.0', '-1'
 
 package = 'typecheck'
 version = _MODREV .. _SPECREV

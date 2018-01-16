@@ -7,7 +7,7 @@ MKDIR	= mkdir -p
 SED	= sed
 SPECL	= specl
 
-VERSION	= git
+VERSION	= 2.0
 
 luadir	= lib/typecheck
 SOURCES =				\
@@ -16,7 +16,7 @@ SOURCES =				\
 	$(NOTHING_ELSE)
 
 
-all: $(luadir)/version.lua doc
+all:
 
 
 $(luadir)/version.lua: Makefile
