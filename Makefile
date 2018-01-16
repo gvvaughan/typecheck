@@ -16,22 +16,16 @@ SOURCES =				\
 	$(NOTHING_ELSE)
 
 
-all: doc $(luadir)/version.lua
+all: $(luadir)/version.lua doc
 
 
-$(luadir)/version.lua: .FORCE
-	@echo "return 'Gradual Function Typechecks / $(VERSION)'" > '$@T';	\
-	if cmp -s '$@' '$@T'; then						\
-	    rm -f '$@T';							\
-	else									\
-	    echo "echo 'Gradual Function Typechecks / $(VERSION)' > $@";	\
-	    mv '$@T' '$@';							\
-	fi
+$(luadir)/version.lua: Makefile
+	echo "return 'Gradual Function Typechecks / $(VERSION)'" > '$@'
 
 doc: build-aux/config.ld $(SOURCES)
 	$(LDOC) -c build-aux/config.ld .
 
-build-aux/config.ld: build-aux/config.ld.in
+build-aux/config.ld: build-aux/config.ld.in Makefile
 	$(SED) -e 's,@PACKAGE_VERSION@,$(VERSION),' '$<' > '$@'
 
 
@@ -39,6 +33,3 @@ CHECK_ENV = LUA=$(LUA)
 
 check: $(SOURCES)
 	LUA=$(LUA) $(SPECL) $(SPECL_OPTS) spec/*_spec.yaml
-
-
-.FORCE:
