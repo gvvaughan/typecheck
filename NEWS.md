@@ -2,6 +2,10 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+
+
+## Noteworthy changes in release 2.0 (2018-01-15) [stable]
+
 ### Incompatible changes
 
   - Use `std._debug` hints to enable or disable runtime type
