@@ -20,8 +20,15 @@ description = {
    license = 'MIT/X11',
 }
 
+dependencies = {
+   'lua >= 5.1, < 5.4',
+   'std.normalize >= 2.0.1',
+}
+
 source = (function(gitp)
    if gitp then
+      dependencies[#dependencies + 1] = 'ldoc'
+
       return {
          url = 'git://github.com/gvvaughan/typecheck.git',
       }
@@ -32,15 +39,6 @@ source = (function(gitp)
       }
    end
 end)(_MODREV == 'git')
-
-dependencies = {
-   'lua >= 5.1, < 5.4',
-   'std.normalize >= 2.0.1',
-}
-
-if _MODREV == 'git' then
-   dependencies[#dependencies + 1] = 'ldoc'
-end
 
 build = {
    type = 'builtin',
