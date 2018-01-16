@@ -2,7 +2,10 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### Incompatible changes
 
+  - Use `std._debug` hints to enable or disable runtime type
+    checking instead of shared global `_DEBUG` symbol.
 
 
 ## Noteworthy changes in release 1.1 (2017-07-07) [stable]

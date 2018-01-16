@@ -49,7 +49,8 @@ report for example):
 ```
 
 The best way to install without [LuaRocks][] is to copy the entire
-`lib/typecheck` directory into a subdirectory of your package search path.
+`lib/typecheck` directory into a subdirectory of your package search path,
+along with the modules listed as dependencies in the included rockspec.
 
 [luarocks]: http://www.luarocks.org "Lua package manager"
 
@@ -90,13 +91,10 @@ look nicer when used at declaration time:
 
 By default, type checks are performed on every call.  But, they can be
 turned off and all of the run-time overhead eliminated in production
-code, either by setting the global `_DEBUG = false` prior to loading
-`typecheck.lua` or, in conjunction with [lua-stdlib][]'s `debug_init`
-module, setting `std.debug_init._DEBUG.argcheck` to `false` (for
-compatibility with code that used `std.debug.argscheck` type checking
-while it was still bundled with stdlib).
+code, either by calling `require 'std._debug' (false)` prior to loading
+`typecheck` or, more precisely, by setting
+`require 'std._debug'.argcheck = false`
 
-[lua-stdlib]: http://github.com/lua-stdlib/lua-stdlib "standard libraries"
 
 
 Documentation

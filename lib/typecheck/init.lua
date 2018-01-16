@@ -6,22 +6,18 @@
  Gradual type checking for Lua functions.
 
  The behaviour of the functions in this module are controlled by the value
- of the global `_DEBUG`.   Not setting `_DEBUG` prior to loading this module
- is equivalent to having `_DEBUG = true`.
+ of the `argcheck` field maintained by the `std._debug` module.  Not setting
+ a value prior to loading this module is equivalent to having `argcheck = true`.
 
  The first line of Lua code in production quality applications that value
  execution speed over rigorous function type checking should be:
 
-    _DEBUG = false
+    require 'std._debug' (false)
 
- Alternatively, if your project also uses Lua stdlib, this modules still
- respects the `std.debug_init` `_DEBUG` table:
+ Alternatively, if your project also depends on other `std._debug` hints
+ remaining enabled:
 
-    require 'std.debug_init'._DEBUG = false
-
- or:
-
-    require 'std.debug_init'._DEBUG = { argcheck = false }
+    require 'std._debug'.argcheck = false
 
  This mitigates almost all of the overhead of type checking with the
  functions from this module.
