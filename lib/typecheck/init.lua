@@ -277,7 +277,7 @@ local function checktypespec(expected, actual)
       check = check or expect
 
       -- Does the type of actual check out?
-      ok = checktype(check, actual)
+      local ok = checktype(check, actual)
 
       -- For 'table of things', check all elements are a thing too.
       if ok and contents and type(actual) == 'table' then
