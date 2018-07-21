@@ -2,6 +2,9 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### Bug fixes
+
+  - works with std.strict again.
 
 
 ## Noteworthy changes in release 2.0 (2018-01-15) [stable]
