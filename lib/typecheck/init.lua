@@ -1,5 +1,5 @@
 --[[
- Gradual Function Type Checking for Lua 5.1, 5.2 & 5.3
+ Gradual Function Type Checking for Lua 5.1, 5.2, 5.3 & 5.4
  Copyright(C) 2014-2018 Gary V. Vaughan
 ]]
 --[[--

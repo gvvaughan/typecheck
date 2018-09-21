@@ -2,6 +2,10 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### New features
+
+  - Initial support for Lua 5.4.
+
 ### Bug fixes
 
   - works with std.strict again.

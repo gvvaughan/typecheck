@@ -24,7 +24,7 @@ core Lua C-language `argcheck ()` API.
   against the specification, and raise an error if some don't match
 
 This is a light-weight library for [Lua][] 5.1 (including [LuaJIT][]),
-5.2 and 5.3 written in pure Lua.
+5.2, 5.3 and 5.4 written in pure Lua.
 
 [github]: http://github.com/gvvaughan/typecheck/ "Github repository"
 [lua]: http://www.lua.org "The Lua Project"

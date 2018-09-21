@@ -21,7 +21,7 @@ source = {
 }
 
 dependencies = {
-   'lua >= 5.1, < 5.4',
+   'lua >= 5.1, < 5.5',
    'std.normalize >= 2.0.1',
 }
 

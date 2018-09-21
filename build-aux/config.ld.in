@@ -1,5 +1,5 @@
 --[[
- Gradual Function Type Checking for Lua 5.1, 5.2 & 5.3
+ Gradual Function Type Checking for Lua 5.1, 5.2, 5.3 & 5.4
  Copyright (C) 2014-2018 Gary V. Vaughan
 ]]
 
@@ -14,7 +14,7 @@ in production code.  Its API and type mismatch errors are modelled on the
 core Lua C-language `argcheck ()` API.
 
 This is a light-weight library for Lua 5.1 (including LuaJIT), 5.2
-and 5.3 written in pure Lua.
+5.3 and 5.4 written in pure Lua.
 
 ## LICENSE
 
