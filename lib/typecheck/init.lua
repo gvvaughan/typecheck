@@ -1,6 +1,6 @@
 --[[
  Gradual Function Type Checking for Lua 5.1, 5.2, 5.3 & 5.4
- Copyright(C) 2014-2018 Gary V. Vaughan
+ Copyright (C) 2014-2018 Gary V. Vaughan
 ]]
 --[[--
  Gradual type checking for Lua functions.
@@ -26,25 +26,52 @@
 ]]
 
 
-local _ENV = require 'std.normalize' {
-   'math.floor',
-   'std._debug',
-   'std.normalize._typecheck',
-   'string.find',
-   'string.format',
-   'string.gsub',
-   'string.match',
-   'string.sub',
-   'table.concat',
-   'table.insert',
-   'table.remove',
-   'table.sort',
-
-   io_type = 'io.type',
+local _ = {
+   base = require 'typecheck._base',
+   strict = require 'typecheck._strict',
 }
 
+local _ENV = _.strict {
+print=print,
+   _debug = require 'std._debug',
+   argerror = _.base.argerror,
+   argscheck = _.base.argscheck,
+   concat = table.concat,
+   error = error,
+   find = string.find,
+   floor = math.floor,
+   format = string.format,
+   getfenv = _.base.getfenv,
+   getmetamethod = _.base.getmetamethod,
+   getmetatable = getmetatable,
+   gsub = string.gsub,
+   insert = table.insert,
+   io_type = io.type,
+   ipairs = ipairs,
+   iscallable = _.base.iscallable,
+   len = _.base.len,
+   match = string.match,
+   next = next,
+   pack = _.base.pack,
+   pairs = pairs,
+   pcall = pcall,
+   rawset = rawset,
+   remove = table.remove,
+   resulterror = _.base.resulterror,
+   require = require,
+   setfenv = _.base.setfenv,
+   setmetatable = setmetatable,
+   sort = table.sort,
+   sub = string.sub,
+   tointeger = _.base.tointeger,
+   tonumber = tonumber,
+   tostring = tostring,
+   type = type,
+   types = _.base.types,
+   unpack = _.base.unpack,
+}
 
-local ARGCHECK_FRAME = _typecheck.ARGCHECK_FRAME
+_ = nil
 
 
 
@@ -79,6 +106,146 @@ local function split(s, sep)
       b = n   or slen + 1
    end
    return r
+end
+
+
+
+--[[ ================= ]]--
+--[[ Type annotations. ]]--
+--[[ ================= ]]--
+
+
+local function fail(expected, argu, i, got)
+   if i > argu.n then
+      return expected, 'got no value'
+   elseif got ~= nil then
+      return expected, 'got ' .. got
+   end
+   return expected
+end
+
+
+--- Low-level type conformance check helper.
+--
+-- Use this, with a simple @{Predicate} function, to write concise argument
+-- type check functions.
+-- @function check
+-- @string expected name of the expected type
+-- @tparam table argu a packed table (including `n` field) of all arguments
+-- @int i index into *argu* for argument to action
+-- @tparam Predicate predicate check whether `argu[i]` matches `expected`
+-- @usage
+--    function callable(argu, i)
+--       return check('string', argu, i, function(x)
+--          return type(x) == 'string'
+--       end)
+--    end
+local function check(expected, argu, i, predicate)
+   local arg = argu[i]
+   local ok, got = predicate(arg)
+   if not ok then
+      return fail(expected, argu, i, got)
+   end
+end
+
+
+local types = setmetatable({
+   -- Accept argu[i].
+   accept = function() end,
+
+   -- Reject missing argument *i*.
+   arg = function(argu, i)
+      if i > argu.n then
+         return 'no value'
+      end
+   end,
+
+   -- Accept function valued or `__call` metamethod carrying argu[i].
+   callable = function(argu, i)
+      return check('callable', argu, i, iscallable)
+   end,
+
+   -- Accept argu[i] if it is an integer valued number, or can be
+   -- converted to one by `tonumber`.
+   integer = function(argu, i)
+      local value = tonumber(argu[i])
+      if type(value) ~= 'number' then
+         return fail('integer', argu, i)
+      end
+      if tointeger(value) == nil then
+         return nil, 'number has no integer representation'
+      end
+   end,
+
+   -- Accept missing argument *i* (but not explicit `nil`).
+   missing = function(argu, i)
+      if i <= argu.n then
+         return nil
+      end
+   end,
+
+   -- Accept string valued or `__string` metamethod carrying argu[i].
+   stringy = function(argu, i)
+      return check('string', argu, i, function(x)
+         return type(x) == 'string' or getmetamethod(x, '__tostring')
+      end)
+   end,
+
+   -- Accept non-nil valued argu[i].
+   value = function(argu, i)
+      if i > argu.n then
+         return 'value', 'got no value'
+      elseif argu[i] == nil then
+         return 'value'
+      end
+   end,
+}, {
+   __index = function(_, k)
+      -- Accept named primitive valued argu[i].
+      return function(argu, i)
+         return check(k, argu, i, function(x)
+            return type(x) == k
+         end)
+      end
+   end,
+})
+
+
+local function any(...)
+   local fns = {...}
+   return function(argu, i)
+      local buf, expected, got, r = {}
+      for _, predicate in ipairs(fns) do
+         r = pack(predicate(argu, i))
+         expected, got = r[1], r[2]
+         if r.n == 0 then
+            -- A match!
+            return
+         elseif r.n == 2 and expected == nil and #got > 0 then
+            -- Return non-type based mismatch immediately.
+            return expected, got
+         elseif expected ~= 'nil' then
+            -- Record one of the types we would have matched.
+            buf[#buf + 1] = expected
+         end
+      end
+      if #buf == 0 then
+         return got
+      elseif #buf > 1 then
+         sort(buf)
+         buf[#buf -1], buf[#buf] = buf[#buf -1] .. ' or ' .. buf[#buf], nil
+      end
+      expected = concat(buf, ', ')
+      if got ~= nil then
+         return expected, got
+      end
+      return expected
+   end
+end
+
+
+local function opt(...)
+   return any(types['nil'], ...)
 end
 
 
@@ -191,7 +358,7 @@ local function checktype(check, actual)
    elseif check == 'file' and io_type(actual) == 'file' then
       return true
    elseif check == 'functor' or check == 'callable' then
-      if(getmetatable(actual) or {}).__call ~= nil then
+      if (getmetatable(actual) or {}).__call ~= nil then
          return true
       end
    end
@@ -302,16 +469,6 @@ end
 --[[ ================================== ]]--
 
 
-local function resulterror(name, i, extramsg, level)
-   level = level or 1
-   local s = format("bad result #%d from '%s'", i, name)
-   if extramsg ~= nil then
-      s = s .. ' (' .. extramsg .. ')'
-   end
-   error(s, level > 0 and level + 1 + ARGCHECK_FRAME or 0)
-end
-
-
 local function extramsg_toomany(bad, expected, actual)
    local s = 'no more than %d %s%s expected, got %d'
    return format(s, expected, bad, expected == 1 and '' or 's', actual)
@@ -392,7 +549,7 @@ end
 
 
 
-local argcheck, argscheck   -- forward declarations
+local argcheck, normalize_argscheck   -- forward declarations
 
 if _debug.argcheck then
 
@@ -492,7 +649,7 @@ if _debug.argcheck then
    -- Pattern to extract: fname([types]?[, types]*)
    local args_pat = '^%s*([%w_][%.%:%d%w_]*)%s*%(%s*(.*)%s*%)'
 
-   function argscheck(decl, inner)
+   function normalize_argscheck(decl, inner)
       -- Parse 'fname(argtype, argtype, argtype...)'.
       local fname, argtypes = match(decl, args_pat)
       if argtypes == '' then
@@ -591,7 +748,7 @@ else
    argcheck = function(...)
       return ...
    end
-   argscheck = function(decl, inner)
+   normalize_argscheck = function(decl, inner)
       if inner then
          return inner
       else
@@ -606,7 +763,7 @@ else
 end
 
 
-local T, any, opt = _typecheck.types, _typecheck.any, _typecheck.opt
+local T = types
 
 return setmetatable({
    --- Check the type of an argument against expected types.
@@ -658,7 +815,9 @@ return setmetatable({
    --    local function case(with, branches)
    --       argcheck('std.functional.case', 2, '#table', branches)
    --       ...
-   argcheck = argcheck,
+   argcheck = argscheck(
+      'argcheck', T.stringy, T.integer, T.stringy, T.accept, opt(T.integer)
+   ) .. argcheck,
 
    --- Raise a bad argument error.
    -- Equivalent to luaL_argerror in the Lua C API. This function does not
@@ -678,9 +837,9 @@ return setmetatable({
    --          argerror('std.io.slurp', 1, err, 2)
    --       end
    --       ...
-   argerror = _typecheck.argscheck(
+   argerror = argscheck(
       'argerror', T.stringy, T.integer, T.accept, opt(T.integer)
-   ) .. _typecheck.argerror,
+   ) .. argerror,
 
    --- Wrap a function definition with argument type and arity checking.
    -- In addition to checking that each argument type matches the corresponding
@@ -724,7 +883,9 @@ return setmetatable({
    --    function(with, branches)
    --       ...
    --    end
-   argscheck = argscheck,
+   argscheck = argscheck(
+      'argscheck', T.stringy, opt(T.callable)
+   ) .. normalize_argscheck,
 
    --- Checks the type of *actual* against the *expected* typespec
    -- @function check
@@ -768,6 +929,21 @@ return setmetatable({
    --    end
    extramsg_toomany = extramsg_toomany,
 
+   --- Create an @{ArgCheck} predicate for an optional argument.
+   --
+   -- This function satisfies the @{ArgCheck} interface in order to be
+   -- useful as an argument to @{argscheck} when a particular argument
+   -- is optional.
+   -- @function opt
+   -- @tparam ArgCheck ... type predicate callables
+   -- @treturn ArgCheck a new function that calls all passed
+   --    predicates, and combines error messages if all fail
+   -- @usage
+   --    getfenv = argscheck(
+   --       'getfenv', opt(types.integer, types.callable)
+   --    ) .. getfenv
+   opt = opt,
+
    --- Compact permutation list into a list of valid types at each argument.
    -- Eliminate bracketed types by combining all valid types at each position
    -- for all permutations of *typelist*.
@@ -791,9 +967,21 @@ return setmetatable({
    --       if type(result) ~= 'string' then
    --          resulterror('std.io.slurp', 1, err, 2)
    --       end
-   resulterror = _typecheck.argscheck(
+   resulterror = argscheck(
       'resulterror', T.stringy, T.integer, T.accept, opt(T.integer)
-   ).. resulterror,
+   ) .. resulterror,
+
+   --- A collection of @{ArgCheck} functions used by `normalize` APIs.
+   -- @table types
+   -- @tfield ArgCheck accept always succeeds
+   -- @tfield ArgCheck callable accept a function or functor
+   -- @tfield ArgCheck integer accept integer valued number
+   -- @tfield ArgCheck nil accept only `nil`
+   -- @tfield ArgCheck stringy accept a string or `__tostring` metamethod
+   --    bearing object
+   -- @tfield ArgCheck table accept any table
+   -- @tfield ArgCheck value accept any non-`nil` value
+   types = types,
 
    --- Split a typespec string into a table of normalized type names.
    -- @function typesplit
@@ -824,3 +1012,24 @@ return setmetatable({
       end
    end,
 })
+
+
+--- Types
+-- @section tyes
+
+--- Signature of an @{argscheck} callable.
+-- @function ArgCheck
+-- @tparam table argu a packed table (including `n` field) of all arguments
+-- @int index into @argu* for argument to action
+-- @return[1] nothing, to accept `argu[i]`
+-- @treturn[2] string error message, to reject `argu[i]` immediately
+-- @treturn[3] string the expected type of `argu[i]`
+-- @treturn[3] string a description of rejected `argu[i]`
+-- @usage
+--    len = argscheck('len', any(types.table, types.string)) .. len
+
+--- Signature of a @{check} type predicate callable.
+-- @function Predicate
+-- @param x object to action
+-- @treturn boolean `true` if *x* is of the expected type, otherwise `false`
+-- @treturn[opt] string description of the actual type for error message

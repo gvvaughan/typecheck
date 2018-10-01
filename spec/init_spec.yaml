@@ -9,7 +9,7 @@ before:
 specify typecheck:
 - describe require:
   - it does not perturb the global namespace:
-      expect(show_apis {added_to='_G', by='typecheck'}).
+      expect(show_apis {added_to='_G', by=this_module}).
          to_equal {}
 
 

@@ -22,14 +22,16 @@ source = {
 
 dependencies = {
    'lua >= 5.1, < 5.5',
-   'std.normalize >= 2.0.1',
+   'std._debug >= 1.0.1',
 }
 
 build = {
    type = 'builtin',
    modules = {
-      ['typecheck']           = 'lib/typecheck/init.lua',
-      ['typecheck.version']   = 'lib/typecheck/version.lua',
+      ['typecheck']            = 'lib/typecheck/init.lua',
+      ['typecheck._base']      = 'lib/typecheck/_base.lua',
+      ['typecheck._strict']    = 'lib/typecheck/_strict.lua',
+      ['typecheck.version']    = 'lib/typecheck/version.lua',
    },
    copy_directories = {'doc'},
 }

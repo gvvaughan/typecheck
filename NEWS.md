@@ -6,6 +6,13 @@
 
   - Initial support for Lua 5.4.
 
+  - No longer depends on `std.normalize`.
+
+  - No need to preinstall `std.strict` for deployment, of course that
+    means without runtime global variable checking.  In development
+    environments, `std.strict` will be loaded and used for runtime
+    checks as before.
+
 ### Bug fixes
 
   - works with std.strict again.
