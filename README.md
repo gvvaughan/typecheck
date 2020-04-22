@@ -6,7 +6,6 @@ Copyright (C) 2014-2020 [Gary V. Vaughan][github]
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
 [![travis-ci status](https://secure.travis-ci.org/gvvaughan/typecheck.png?branch=master)](http://travis-ci.org/gvvaughan/typecheck/builds)
 [![codecov.io](https://codecov.io/gh/gvvaughan/typecheck/branch/master/graph/badge.svg)](https://codecov.io/gh/gvvaughan/typecheck)
-[![Stories in Ready](https://badge.waffle.io/gvvaughan/typecheck.png?label=ready&title=Ready)](https://waffle.io/gvvaughan/typecheck)
 
 A Luaish run-time gradual type checking system, for argument and return
 types at function boundaries with simple annotations that can be disabled
