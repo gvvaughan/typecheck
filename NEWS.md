@@ -1,7 +1,5 @@
 # typecheck NEWS - User visible changes
 
-## Noteworthy changes in release ?.? (????-??-??) [?]
-
 
 ## Noteworthy changes in release 3.0.1 (2026-07-27) [stable]
 
