@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>typecheck 2.1 Reference</title>
+    <title>typecheck 3.0 Reference</title>
     <link rel="stylesheet" href="ldoc.css" type="text/css" />
 </head>
 <body>
@@ -24,13 +24,14 @@
 
 <div id="navigation">
 <br/>
-<h1>typecheck 2.1</h1>
+<h1>typecheck 3.0</h1>
 
 
 <h2>Contents</h2>
 <ul>
 <li><a href="#Functions">Functions</a></li>
 <li><a href="#Tables">Tables</a></li>
+<li><a href="#Fields">Fields</a></li>
 <li><a href="#Metamethods">Metamethods </a></li>
 <li><a href="#Types">Types </a></li>
 </ul>
@@ -94,7 +95,7 @@
 	<td class="summary">Checks the type of <em>actual</em> against the <em>expected</em> typespec</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#extramsg_mismatch">extramsg_mismatch (expected, actual[, index])</a></td>
+	<td class="name" nowrap><a href="#extramsg_mismatch">extramsg_mismatch ([i], expected, argu[, key])</a></td>
 	<td class="summary">Format a type mismatch error.</td>
 	</tr>
 	<tr>
@@ -123,6 +124,13 @@
 	<tr>
 	<td class="name" nowrap><a href="#types">types</a></td>
 	<td class="summary">A collection of <a href="index.html#ArgCheck">ArgCheck</a> functions used by <code>normalize</code> APIs.</td>
+	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#ARGCHECK_FRAME">ARGCHECK_FRAME</a></td>
+	<td class="summary">Add this to any stack frame offsets when argchecks are in force.</td>
 	</tr>
 </table>
 <h2><a href="#Metamethods">Metamethods </a></h2>
@@ -165,11 +173,11 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">expected</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          name of the expected type
         </li>
         <li><span class="parameter">argu</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.6">table</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
          a packed table (including <code>n</code> field) of all arguments
         </li>
         <li><span class="parameter">i</span>
@@ -211,11 +219,11 @@
 
 <pre><code>#table    accept any non-empty table
 any       accept any non-nil argument type
-callable  accept a function or a functor
+callable  accept a function or a functable
 file      accept an open file object
 func      accept a function
 function  accept a function
-functor   accept an object with a __call metamethod
+functable accept an object with a __call metamethod
 int       accept an integer valued number
 list      accept a table where all keys are a contiguous 1-based integer range
 #list     accept any non-empty list
@@ -247,7 +255,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          function to blame in error message
         </li>
         <li><span class="parameter">i</span>
@@ -255,7 +263,7 @@ object    accept any std.Object derived type
          argument number to blame in error message
         </li>
         <li><span class="parameter">expected</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          specification for acceptable argument types
         </li>
         <li><span class="parameter">actual</span>
@@ -293,7 +301,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          function to callout in error message
         </li>
         <li><span class="parameter">i</span>
@@ -301,7 +309,7 @@ object    accept any std.Object derived type
          argument number
         </li>
         <li><span class="parameter">extramsg</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          additional text to append to message inside parentheses
          (<em>optional</em>)
         </li>
@@ -376,7 +384,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">decl</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          function type declaration string
         </li>
         <li><span class="parameter">inner</span>
@@ -414,7 +422,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">expected</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          expected typespec
         </li>
         <li><span class="parameter">actual</span>
@@ -433,7 +441,7 @@ object    accept any std.Object derived type
         <li>
         <code>nil</code></li>
         <li>
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
         an <a href="index.html#extramsg_mismatch">extramsg_mismatch</a> format error message, otherwise</li>
     </ol>
 
@@ -448,7 +456,7 @@ object    accept any std.Object derived type
 </dd>
     <dt>
     <a name = "extramsg_mismatch"></a>
-    <strong>extramsg_mismatch (expected, actual[, index])</strong>
+    <strong>extramsg_mismatch ([i], expected, argu[, key])</strong>
     </dt>
     <dd>
     Format a type mismatch error.
@@ -456,16 +464,21 @@ object    accept any std.Object derived type
 
     <h3>Parameters:</h3>
     <ul>
+        <li><span class="parameter">i</span>
+            <span class="types"><span class="type">int</span></span>
+         index of <em>argu</em> to be matched with
+         (<em>optional</em>)
+        </li>
         <li><span class="parameter">expected</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          a pipe delimited list of matchable types
         </li>
-        <li><span class="parameter">actual</span>
-         the actual argument to match with
+        <li><span class="parameter">argu</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         packed table of all arguments
         </li>
-        <li><span class="parameter">index</span>
-            <span class="types"><span class="type">number</span></span>
-         erroring container element index
+        <li><span class="parameter">key</span>
+         erroring container element key
          (<em>optional</em>)
         </li>
     </ul>
@@ -473,7 +486,7 @@ object    accept any std.Object derived type
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
         formatted <em>extramsg</em> for this mismatch for <a href="index.html#argerror">argerror</a>
     </ol>
 
@@ -487,7 +500,7 @@ object    accept any std.Object derived type
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="keyword">if</span> fmt ~= <span class="keyword">nil</span> <span class="keyword">and</span> <span class="global">type</span>(fmt) ~= <span class="string">'string'</span> <span class="keyword">then</span>
-   argerror(<span class="string">'format'</span>, <span class="number">1</span>, extramsg_mismatch(<span class="string">'?string'</span>, fmt))
+   argerror(<span class="string">'format'</span>, <span class="number">1</span>, extramsg_mismatch(<span class="number">1</span>, <span class="string">'?string'</span>, argu))
 <span class="keyword">end</span></pre>
     </ul>
 
@@ -503,7 +516,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">bad</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          the thing there are too many of
         </li>
         <li><span class="parameter">expected</span>
@@ -568,9 +581,9 @@ object    accept any std.Object derived type
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">getfenv = argscheck(
+        <pre class="example"><span class="global">getfenv</span> = argscheck(
    <span class="string">'getfenv'</span>, opt(types.integer, types.callable)
-) .. getfenv</pre>
+) .. <span class="global">getfenv</span></pre>
     </ul>
 
 </dd>
@@ -617,7 +630,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          function to callout in error message
         </li>
         <li><span class="parameter">i</span>
@@ -625,7 +638,7 @@ object    accept any std.Object derived type
          result number
         </li>
         <li><span class="parameter">extramsg</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          additional text to append to message inside parentheses
          (<em>optional</em>)
         </li>
@@ -660,7 +673,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">either</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a> or <a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.6">table</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
          <code>"?bool|:nometa"</code> or <code>{"boolean", ":nometa"}</code>
         </li>
     </ul>
@@ -668,7 +681,7 @@ object    accept any std.Object derived type
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.6">table</a></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
 
 <p>a new list with duplicates removed and leading '?'s</p>
 <pre><code>replaced by a 'nil' element
@@ -700,7 +713,7 @@ object    accept any std.Object derived type
         </li>
         <li><span class="parameter">callable</span>
             <span class="types"><a class="type" href="index.html#ArgCheck">ArgCheck</a></span>
-         accept a function or functor
+         accept a function or functable
         </li>
         <li><span class="parameter">integer</span>
             <span class="types"><a class="type" href="index.html#ArgCheck">ArgCheck</a></span>
@@ -710,14 +723,6 @@ object    accept any std.Object derived type
             <span class="types"><a class="type" href="index.html#ArgCheck">ArgCheck</a></span>
          accept only <code>nil</code>
         </li>
-        <li><span class="parameter">stringy</span>
-            <span class="types"><a class="type" href="index.html#ArgCheck">ArgCheck</a></span>
-
-<p> accept a string or <code>__tostring</code> metamethod</p>
-<pre><code>bearing object
-</code></pre>
-
-        </li>
         <li><span class="parameter">table</span>
             <span class="types"><a class="type" href="index.html#ArgCheck">ArgCheck</a></span>
          accept any table
@@ -725,6 +730,32 @@ object    accept any std.Object derived type
         <li><span class="parameter">value</span>
             <span class="types"><a class="type" href="index.html#ArgCheck">ArgCheck</a></span>
          accept any non-<code>nil</code> value
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "ARGCHECK_FRAME"></a>
+    <strong>ARGCHECK_FRAME</strong>
+    </dt>
+    <dd>
+    Add this to any stack frame offsets when argchecks are in force.
+
+
+    <ul>
+        <li><span class="parameter">ARGCHECK_FRAME</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
         </li>
     </ul>
 
@@ -750,7 +781,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          submodule name
         </li>
     </ul>
@@ -758,7 +789,7 @@ object    accept any std.Object derived type
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.6">table</a> or <span class="type">nil</span></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">nil</span></span>
 
 <p>the submodule that was loaded to satisfy the missing</p>
 <pre><code>`name`, otherwise `nil` if nothing was found
@@ -789,7 +820,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">argu</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.6">table</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
          a packed table (including <code>n</code> field) of all arguments
         </li>
         <li><span class="parameter">index</span>
@@ -806,16 +837,16 @@ object    accept any std.Object derived type
      <h3>Or</h3>
     <ol>
 
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
         error message, to reject <code>argu[i]</code> immediately
     </ol>
      <h3>Or</h3>
     <ol>
         <li>
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
         the expected type of <code>argu[i]</code></li>
         <li>
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
         a description of rejected <code>argu[i]</code></li>
     </ol>
 
@@ -848,7 +879,7 @@ object    accept any std.Object derived type
            <span class="types"><span class="type">boolean</span></span>
         <code>true</code> if <em>x</em> is of the expected type, otherwise <code>false</code></li>
         <li>
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.3/manual.html#6.4">string</a></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
         description of the actual type for error message</li>
     </ol>
 
@@ -863,7 +894,7 @@ object    accept any std.Object derived type
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-04-24 17:43:42 </i>
+<i style="float:right;">Last updated 2023-01-31 17:30:17 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
