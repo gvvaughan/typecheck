@@ -2,6 +2,9 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+
+## Noteworthy changes in release 3.0 (2023-01-31) [stable]
+
 ### New Features
 
   - `ARGCHECK_FRAME` is now exported for use when writing your own
@@ -89,7 +92,7 @@
     ```
 
 
-## Noteworthy changes in release 2,1 (2020-04-24) [stable]
+## Noteworthy changes in release 2.1 (2020-04-24) [stable]
 
 ### New features
 
