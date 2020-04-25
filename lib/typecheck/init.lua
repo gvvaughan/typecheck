@@ -1136,7 +1136,7 @@ return setmetatable({
 
 
 --- Types
--- @section tyes
+-- @section types
 
 --- Signature of an @{argscheck} callable.
 -- @function ArgCheck
