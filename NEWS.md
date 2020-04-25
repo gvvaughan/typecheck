@@ -1,8 +1,5 @@
 # typecheck NEWS - User visible changes
 
-## Noteworthy changes in release ?.? (????-??-??) [?]
-
-
 ## Noteworthy changes in release 3.0 (2023-01-31) [stable]
 
 ### New Features
