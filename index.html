@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>typecheck 3.0 Reference</title>
+    <title>typecheck 3.0.1 Reference</title>
     <link rel="stylesheet" href="ldoc.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,8 @@
 
 <div id="navigation">
 <br/>
-<h1>typecheck 3.0</h1>
+<h1>typecheck 3.0.1</h1>
+
 
 
 <h2>Contents</h2>
@@ -181,7 +182,7 @@
          a packed table (including <code>n</code> field) of all arguments
         </li>
         <li><span class="parameter">i</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          index into <em>argu</em> for argument to action
         </li>
         <li><span class="parameter">predicate</span>
@@ -195,8 +196,8 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="keyword">function</span> callable(argu, i)
-   <span class="keyword">return</span> check(<span class="string">'string'</span>, argu, i, <span class="keyword">function</span>(x)
+        <pre class="example"><span class="keyword">function</span> <span class="function-name">callable</span>(argu, i)
+   <span class="keyword">return</span> <span class="function-name">check</span>(<span class="string">'string'</span>, argu, i, <span class="keyword">function</span>(x)
       <span class="keyword">return</span> <span class="global">type</span>(x) == <span class="string">'string'</span>
    <span class="keyword">end</span>)
 <span class="keyword">end</span></pre>
@@ -259,7 +260,7 @@ object    accept any std.Object derived type
          function to blame in error message
         </li>
         <li><span class="parameter">i</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          argument number to blame in error message
         </li>
         <li><span class="parameter">expected</span>
@@ -270,7 +271,7 @@ object    accept any std.Object derived type
          argument passed
         </li>
         <li><span class="parameter">level</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          call stack level to blame for the error
          (<em>default</em> 2)
         </li>
@@ -281,8 +282,8 @@ object    accept any std.Object derived type
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="keyword">local</span> <span class="keyword">function</span> case(with, branches)
-   argcheck(<span class="string">'std.functional.case'</span>, <span class="number">2</span>, <span class="string">'#table'</span>, branches)
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">case</span>(with, branches)
+   <span class="function-name">argcheck</span>(<span class="string">'std.functional.case'</span>, <span class="number">2</span>, <span class="string">'#table'</span>, branches)
    ...</pre>
     </ul>
 
@@ -305,7 +306,7 @@ object    accept any std.Object derived type
          function to callout in error message
         </li>
         <li><span class="parameter">i</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          argument number
         </li>
         <li><span class="parameter">extramsg</span>
@@ -314,7 +315,7 @@ object    accept any std.Object derived type
          (<em>optional</em>)
         </li>
         <li><span class="parameter">level</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          call stack level to blame for the error
          (<em>default</em> 1)
         </li>
@@ -330,10 +331,10 @@ object    accept any std.Object derived type
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="keyword">local</span> <span class="keyword">function</span> slurp(file)
-   <span class="keyword">local</span> h, err = input_handle(file)
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">slurp</span>(file)
+   <span class="keyword">local</span> h, err = <span class="function-name">input_handle</span>(file)
    <span class="keyword">if</span> h == <span class="keyword">nil</span> <span class="keyword">then</span>
-      argerror(<span class="string">'std.io.slurp'</span>, <span class="number">1</span>, err, <span class="number">2</span>)
+      <span class="function-name">argerror</span>(<span class="string">'std.io.slurp'</span>, <span class="number">1</span>, err, <span class="number">2</span>)
    <span class="keyword">end</span>
    ...</pre>
     </ul>
@@ -388,7 +389,7 @@ object    accept any std.Object derived type
          function type declaration string
         </li>
         <li><span class="parameter">inner</span>
-            <span class="types"><span class="type">func</span></span>
+            <span class="types"><span class="type">function</span></span>
          function to wrap with argument checking
         </li>
     </ul>
@@ -398,13 +399,13 @@ object    accept any std.Object derived type
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="keyword">local</span> case = argscheck(<span class="string">'std.functional.case(?any, #table) =&gt; [any...]'</span>,
+        <pre class="example"><span class="keyword">local</span> case = <span class="function-name">argscheck</span>(<span class="string">'std.functional.case(?any, #table) =&gt; [any...]'</span>,
    <span class="keyword">function</span>(with, branches)
       ...
    <span class="keyword">end</span>)
 
 <span class="comment">-- Alternatively, as an annotation:
-</span><span class="keyword">local</span> case = argscheck <span class="string">'std.functional.case(?any, #table) =&gt; [any...]'</span> ..
+</span><span class="keyword">local</span> case = <span class="function-name">argscheck</span> <span class="string">'std.functional.case(?any, #table) =&gt; [any...]'</span> ..
 <span class="keyword">function</span>(with, branches)
    ...
 <span class="keyword">end</span></pre>
@@ -450,7 +451,7 @@ object    accept any std.Object derived type
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="comment">--&gt; stdin:2: string or number expected, got empty table
-</span><span class="global">assert</span>(check(<span class="string">'string|number'</span>, {}))</pre>
+</span><span class="global">assert</span>(<span class="function-name">check</span>(<span class="string">'string|number'</span>, {}))</pre>
     </ul>
 
 </dd>
@@ -465,7 +466,7 @@ object    accept any std.Object derived type
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">i</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          index of <em>argu</em> to be matched with
          (<em>optional</em>)
         </li>
@@ -500,7 +501,7 @@ object    accept any std.Object derived type
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="keyword">if</span> fmt ~= <span class="keyword">nil</span> <span class="keyword">and</span> <span class="global">type</span>(fmt) ~= <span class="string">'string'</span> <span class="keyword">then</span>
-   argerror(<span class="string">'format'</span>, <span class="number">1</span>, extramsg_mismatch(<span class="number">1</span>, <span class="string">'?string'</span>, argu))
+   <span class="function-name">argerror</span>(<span class="string">'format'</span>, <span class="number">1</span>, <span class="function-name">extramsg_mismatch</span>(<span class="number">1</span>, <span class="string">'?string'</span>, argu))
 <span class="keyword">end</span></pre>
     </ul>
 
@@ -520,11 +521,11 @@ object    accept any std.Object derived type
          the thing there are too many of
         </li>
         <li><span class="parameter">expected</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          maximum number of <em>bad</em> things expected
         </li>
         <li><span class="parameter">actual</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          actual number of <em>bad</em> things that triggered the error
         </li>
     </ul>
@@ -541,7 +542,7 @@ object    accept any std.Object derived type
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="keyword">if</span> <span class="global">select</span>(<span class="string">'#'</span>, ...) &gt; <span class="number">7</span> <span class="keyword">then</span>
-   argerror(<span class="string">'sevenses'</span>, <span class="number">8</span>, extramsg_toomany(<span class="string">'argument'</span>, <span class="number">7</span>, <span class="global">select</span>(<span class="string">'#'</span>, ...)))
+   <span class="function-name">argerror</span>(<span class="string">'sevenses'</span>, <span class="number">8</span>, <span class="function-name">extramsg_toomany</span>(<span class="string">'argument'</span>, <span class="number">7</span>, <span class="global">select</span>(<span class="string">'#'</span>, ...)))
 <span class="keyword">end</span></pre>
     </ul>
 
@@ -581,8 +582,8 @@ object    accept any std.Object derived type
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="global">getfenv</span> = argscheck(
-   <span class="string">'getfenv'</span>, opt(types.integer, types.callable)
+        <pre class="example"><span class="global">getfenv</span> = <span class="function-name">argscheck</span>(
+   <span class="string">'getfenv'</span>, <span class="function-name">opt</span>(types.integer, types.callable)
 ) .. <span class="global">getfenv</span></pre>
     </ul>
 
@@ -634,7 +635,7 @@ object    accept any std.Object derived type
          function to callout in error message
         </li>
         <li><span class="parameter">i</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          result number
         </li>
         <li><span class="parameter">extramsg</span>
@@ -643,7 +644,7 @@ object    accept any std.Object derived type
          (<em>optional</em>)
         </li>
         <li><span class="parameter">level</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          call stack level to blame for the error
          (<em>default</em> 1)
         </li>
@@ -654,10 +655,10 @@ object    accept any std.Object derived type
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="keyword">local</span> <span class="keyword">function</span> slurp(file)
+        <pre class="example"><span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">slurp</span>(file)
    ...
    <span class="keyword">if</span> <span class="global">type</span>(result) ~= <span class="string">'string'</span> <span class="keyword">then</span>
-      resulterror(<span class="string">'std.io.slurp'</span>, <span class="number">1</span>, err, <span class="number">2</span>)
+      <span class="function-name">resulterror</span>(<span class="string">'std.io.slurp'</span>, <span class="number">1</span>, err, <span class="number">2</span>)
    <span class="keyword">end</span></pre>
     </ul>
 
@@ -752,7 +753,7 @@ object    accept any std.Object derived type
 
     <ul>
         <li><span class="parameter">ARGCHECK_FRAME</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
 
 
 
@@ -824,7 +825,7 @@ object    accept any std.Object derived type
          a packed table (including <code>n</code> field) of all arguments
         </li>
         <li><span class="parameter">index</span>
-            <span class="types"><span class="type">int</span></span>
+            <span class="types"><span class="type">integer</span></span>
          into @argu* for argument to action
         </li>
     </ul>
@@ -854,7 +855,7 @@ object    accept any std.Object derived type
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">len = argscheck(<span class="string">'len'</span>, any(types.<span class="global">table</span>, types.<span class="global">string</span>)) .. len</pre>
+        <pre class="example">len = <span class="function-name">argscheck</span>(<span class="string">'len'</span>, <span class="function-name">any</span>(types.<span class="global">table</span>, types.<span class="global">string</span>)) .. len</pre>
     </ul>
 
 </dd>
@@ -893,8 +894,8 @@ object    accept any std.Object derived type
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2023-01-31 17:30:17 </i>
+<i>generated by <a href="http://github.com/lunarmodules/ldoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-07-26 16:53:54 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
