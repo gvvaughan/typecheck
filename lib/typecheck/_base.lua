@@ -34,9 +34,9 @@ local ARGCHECK_FRAME = 0
 
 
 
---[[ =============== ]]--
---[[ Normalizeation. ]]--
---[[ =============== ]]--
+--[[ ============== ]]--
+--[[ Normalization. ]]--
+--[[ ============== ]]--
 
 
 local function getmetamethod(x, n)
@@ -62,8 +62,13 @@ local pack_mt = {
 }
 
 
-local normalize_pack = pack or function(...)
+local pack = pack or function(...)
    return {n=select('#', ...), ...}
+end
+
+
+local normalize_pack = function(...)
+   return setmetatable(pack(...), pack_mt)
 end
 
 
