@@ -5,17 +5,13 @@
 
 local _ENV = require 'typecheck._strict' {
    _G = _G,
-   _debug = require 'std._debug',
-   concat = table.concat,
    debug_getfenv = debug.getfenv or false,
    debug_getinfo = debug.getinfo,
    debug_getupvalue = debug.getupvalue,
    debug_setfenv = debug.setfenv or false,
    debug_setupvalue = debug.setupvalue,
    debug_upvaluejoin = debug.upvaluejoin,
-   error = error,
    floor = math.floor,
-   format = string.format,
    getfenv = getfenv or false,
    getmetatable = getmetatable,
    pack = table.pack or false,
@@ -27,10 +23,6 @@ local _ENV = require 'typecheck._strict' {
    type = type,
    unpack = table.unpack or unpack,
 }
-
--- There's an additional stack frame to count over from inside functions
--- with argchecks enabled.
-local ARGCHECK_FRAME = 0
 
 
 
@@ -47,11 +39,6 @@ local function getmetamethod(x, n)
    if type((getmetatable(m) or {}).__call) == 'function' then
       return m
    end
-end
-
-
-local function iscallable(x)
-   return type(x) == 'function' or getmetamethod(x, '__call')
 end
 
 
@@ -230,123 +217,12 @@ end
 
 
 
---[[ =============== ]]--
---[[ Implementation. ]]--
---[[ =============== ]]--
-
-
-local function argerror(name, i, extramsg, level)
-   level = normalize_tointeger(level) or 1
-   local s = format("bad argument #%d to '%s'", normalize_tointeger(i), name)
-   if extramsg ~= nil then
-      s = s .. ' (' .. extramsg .. ')'
-   end
-   error(s, level > 0 and level + 2 + ARGCHECK_FRAME or 0)
-end
-
-
-local argscheck
-do
-   -- Set argscheck according to whether argcheck was required by _debug.
-   if _debug.argcheck then
-
-      ARGCHECK_FRAME = 1
-
-      local function icalls(name, checks, argu)
-         return function(state, i)
-            if i < state.checks.n then
-               i = i + 1
-               local r = normalize_pack(state.checks[i](state.argu, i))
-               if r.n > 0 then
-                  return i, r[1], r[2]
-               end
-               return i
-            end
-         end, {argu=argu, checks=checks}, 0
-      end
-
-      argscheck = function(name, ...)
-         return setmetatable(normalize_pack(...), {
-            __concat = function(checks, inner)
-               if not iscallable(inner) then
-                  error("attempt to annotate non-callable value with 'argscheck'", 2)
-               end
-               return function(...)
-                  local argu = normalize_pack(...)
-                  for i, expected, got in icalls(name, checks, argu) do
-                     if got or expected then
-                        local buf, extramsg = {}
-                        if expected then
-                           got = got or 'got ' .. type(argu[i])
-                           buf[#buf +1] = expected .. ' expected, ' .. got
-                        elseif got then
-                           buf[#buf +1] = got
-                        end
-                        if #buf > 0 then
-                           extramsg = concat(buf)
-                        end
-                        return argerror(name, i, extramsg, 3), nil
-                     end
-                  end
-                  -- Tail call pessimisation: inner might be counting frames,
-                  -- and have several return values that need preserving.
-                  -- Different Lua implementations tail call under differing
-                  -- conditions, so we need this hair to make sure we always
-                  -- get the same number of stack frames interposed.
-                  local results = normalize_pack(inner(...))
-                  return normalize_unpack(results, 1, results.n)
-               end
-            end,
-         })
-      end
-
-   else
-
-      -- Return `inner` untouched, for no runtime overhead!
-      argscheck = function(...)
-         return setmetatable({}, {
-            __concat = function(_, inner)
-               return inner
-            end,
-         })
-      end
-
-   end
-end
-
-
-
 --[[ ================= ]]--
 --[[ Public Interface. ]]--
 --[[ ================= ]]--
 
 
 return {
-   --- Raise a bad argument error.
-   -- @see typecheck.argerror
-   argerror = argerror,
-
-   --- A rudimentary argument type validation decorator.
-   --
-   -- Return the checked function directly if `_debug.argcheck` is reset,
-   -- otherwise use check function arguments using predicate functions in
-   -- the corresponding position in the decorator call.
-   -- @function argscheck
-   -- @string name function name to use in error messages
-   -- @tparam funct predicate return true if checked function argument is
-   --    valid, otherwise return nil and an error message suitable for
-   --    *extramsg* argument of @{argerror}
-   -- @tparam func ... additional predicates for subsequent checked
-   --    function arguments
-   -- @raises argerror when an argument validator returns failure
-   -- @see argerror
-   -- @usage
-   --    local unpack = argscheck('unpack', types.table) ..
-   --    function(t, i, j)
-   --       return table.unpack(t, i or 1, j or #t)
-   --    end
-   argscheck = argscheck,
-
    --- Get a function or functor environment.
    -- @see std.normalize.getfenv
    getfenv = normalize_getfenv,
@@ -354,14 +230,6 @@ return {
    --- Return named metamethod, if callable, otherwise `nil`.
    -- @see std.normalize.getmetamethod
    getmetamethod = getmetamethod,
-
-   --- Predicate to check for a function or table with a `__call`
-   -- metamethod.
-   -- @function iscallable
-   -- @param x argument to be typechecked
-   -- @treturn boolean `true` if *x* can be called like a function
-   -- @see typecheck.types.callable
-   iscallable = iscallable,
 
    --- Deterministic, functional version of core Lua `#` operator.
    -- @see std.normalize.len
@@ -375,17 +243,6 @@ return {
    --- Length of a string or table object without using any metamethod.
    -- @see std.normalize.rawlen
    rawlen = rawlen,
-
-   --- Raise a bad result error.
-   -- @see typecheck.resulterror
-   resulterror = function(name, i, extramsg, level)
-      level = level or 1
-      local s = format("bad result #%d from '%s'", i, name)
-      if extramsg ~= nil then
-         s = s .. ' (' .. extramsg .. ')'
-      end
-      error(s, level > 0 and level + 1 + ARGCHECK_FRAME or 0)
-   end,
 
    --- Set a function or functor environment.
    -- @see std.normalize.setfenv

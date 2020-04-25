@@ -32,10 +32,7 @@ local _ = {
 }
 
 local _ENV = _.strict {
-print=print,
    _debug = require 'std._debug',
-   argerror = _.base.argerror,
-   argscheck = _.base.argscheck,
    concat = table.concat,
    error = error,
    find = string.find,
@@ -57,7 +54,6 @@ print=print,
    pcall = pcall,
    rawset = rawset,
    remove = table.remove,
-   resulterror = _.base.resulterror,
    require = require,
    setfenv = _.base.setfenv,
    setmetatable = setmetatable,
@@ -91,6 +87,11 @@ local function copy(dest, src)
 end
 
 
+local function iscallable(x)
+   return type(x) == 'function' or getmetamethod(x, '__call')
+end
+
+
 local function split(s, sep)
    local r, patt = {}
    if sep == '' then
@@ -106,6 +107,126 @@ local function split(s, sep)
       b = n   or slen + 1
    end
    return r
+end
+
+
+
+--[[ ================== ]]--
+--[[ Argument Checking. ]]--
+--[[ ================== ]]--
+
+
+-- There's an additional stack frame to count over from inside functions
+-- with argchecks enabled.
+local ARGCHECK_FRAME = 0
+
+
+local function argerror(name, i, extramsg, level)
+   level = tointeger(level) or 1
+   local s = format("bad argument #%d to '%s'", tointeger(i), name)
+   if extramsg ~= nil then
+      s = s .. ' (' .. extramsg .. ')'
+   end
+   error(s, level > 0 and level + 2 + ARGCHECK_FRAME or 0)
+end
+
+
+-- A rudimentary argument type validation decorator.
+--
+-- Return the checked function directly if `_debug.argcheck` is reset,
+-- otherwise use check function arguments using predicate functions in
+-- the corresponding position in the decorator call.
+-- @function argscheck
+-- @string name function name to use in error messages
+-- @tparam funct predicate return true if checked function argument is
+--    valid, otherwise return nil and an error message suitable for
+--    *extramsg* argument of @{argerror}
+-- @tparam func ... additional predicates for subsequent checked
+--    function arguments
+-- @raises argerror when an argument validator returns failure
+-- @see argerror
+-- @usage
+--    local unpack = argscheck('unpack', types.table) ..
+--    function(t, i, j)
+--       return table.unpack(t, i or 1, j or #t)
+--    end
+local argscheck
+do
+   -- Set argscheck according to whether argcheck was required by _debug.
+   if _debug.argcheck then
+
+      ARGCHECK_FRAME = 1
+
+      local function icalls(name, checks, argu)
+         return function(state, i)
+            if i < state.checks.n then
+               i = i + 1
+               local r = pack(state.checks[i](state.argu, i))
+               if r.n > 0 then
+                  return i, r[1], r[2]
+               end
+               return i
+            end
+         end, {argu=argu, checks=checks}, 0
+      end
+
+      argscheck = function(name, ...)
+         return setmetatable(pack(...), {
+            __concat = function(checks, inner)
+               if not iscallable(inner) then
+                  error("attempt to annotate non-callable value with 'argscheck'", 2)
+               end
+               return function(...)
+                  local argu = pack(...)
+                  for i, expected, got in icalls(name, checks, argu) do
+                     if got or expected then
+                        local buf, extramsg = {}
+                        if expected then
+                           got = got or 'got ' .. type(argu[i])
+                           buf[#buf +1] = expected .. ' expected, ' .. got
+                        elseif got then
+                           buf[#buf +1] = got
+                        end
+                        if #buf > 0 then
+                           extramsg = concat(buf)
+                        end
+                        return argerror(name, i, extramsg, 3), nil
+                     end
+                  end
+                  -- Tail call pessimisation: inner might be counting frames,
+                  -- and have several return values that need preserving.
+                  -- Different Lua implementations tail call under differing
+                  -- conditions, so we need this hair to make sure we always
+                  -- get the same number of stack frames interposed.
+                  local results = pack(inner(...))
+                  return unpack(results, 1, results.n)
+               end
+            end,
+         })
+      end
+
+   else
+
+      -- Return `inner` untouched, for no runtime overhead!
+      argscheck = function(...)
+         return setmetatable({}, {
+            __concat = function(_, inner)
+               return inner
+            end,
+         })
+      end
+
+   end
+end
+
+
+local function resulterror(name, i, extramsg, level)
+   level = level or 1
+   local s = format("bad result #%d from '%s'", i, name)
+   if extramsg ~= nil then
+      s = s .. ' (' .. extramsg .. ')'
+   end
+   error(s, level > 0 and level + 1 + ARGCHECK_FRAME or 0)
 end
 
 
