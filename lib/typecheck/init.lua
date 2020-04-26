@@ -45,7 +45,6 @@ local _ENV = _.strict {
    insert = table.insert,
    io_type = io.type,
    ipairs = ipairs,
-   iscallable = _.base.iscallable,
    len = _.base.len,
    match = string.match,
    next = next,
