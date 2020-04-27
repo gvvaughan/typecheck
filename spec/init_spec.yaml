@@ -550,16 +550,28 @@ specify typecheck:
 
   - context with int:
     - it diagnoses missing types:
-        expect(fn('int', nil)).to_raise 'int expected, got no value'
+        expect(fn('int', nil)).to_raise 'integer expected, got no value'
     - it diagnoses mismatched types:
-        expect(fn('int', false)).to_raise 'int expected, got boolean'
-        expect(fn('int', 1.234)).to_raise 'int expected, got number'
-        expect(fn('int', 1234e-3)).to_raise 'int expected, got number'
+        expect(fn('int', false)).to_raise 'integer expected, got boolean'
+        expect(fn('int', 1.234)).to_raise 'integer expected, got number'
+        expect(fn('int', 1234e-3)).to_raise 'integer expected, got number'
     - it matches types:
         expect(fn('int', 1)).not_to_raise 'any error'
         expect(fn('int', 1.0)).not_to_raise 'any error'
         expect(fn('int', 0x1234)).not_to_raise 'any error'
         expect(fn('int', 1.234e3)).not_to_raise 'any error'
+  - context with integer:
+    - it diagnoses missing types:
+        expect(fn('integer', nil)).to_raise 'integer expected, got no value'
+    - it diagnoses mismatched types:
+        expect(fn('integer', false)).to_raise 'integer expected, got boolean'
+        expect(fn('integer', 1.234)).to_raise 'integer expected, got number'
+        expect(fn('integer', 1234e-3)).to_raise 'integer expected, got number'
+    - it matches types:
+        expect(fn('integer', 1)).not_to_raise 'any error'
+        expect(fn('integer', 1.0)).not_to_raise 'any error'
+        expect(fn('integer', 0x1234)).not_to_raise 'any error'
+        expect(fn('integer', 1.234e3)).not_to_raise 'any error'
   - context with constant string:
     - it diagnoses missing types:
         expect(fn(':foo', nil)).to_raise ':foo expected, got no value'
@@ -914,7 +926,7 @@ specify typecheck:
     - before:
         wrapped = f('inner(?int, string)', mkmagic)
     - it diagnoses wrong argument types:
-        expect(wrapped(false)).to_raise(badarg(1, 'int or nil', 'boolean'))
+        expect(wrapped(false)).to_raise(badarg(1, 'integer or nil', 'boolean'))
         expect(wrapped(1, false)).to_raise(badarg(2, 'string', 'boolean'))
         expect(wrapped(nil, false)).to_raise(badarg(2, 'string', 'boolean'))
     - it diagnoses too many arguments:
@@ -928,10 +940,10 @@ specify typecheck:
     - before:
         wrapped = f('inner([int], string)', mkmagic)
     - it diagnoses missing arguments:
-        expect(wrapped()).to_raise(badarg(1, 'int or string'))
+        expect(wrapped()).to_raise(badarg(1, 'integer or string'))
         expect(wrapped(1)).to_raise(badarg(2, 'string'))
     - it diagnoses wrong argument types:
-        expect(wrapped(false)).to_raise(badarg(1, 'int or string', 'boolean'))
+        expect(wrapped(false)).to_raise(badarg(1, 'integer or string', 'boolean'))
     - it diagnoses too many arguments:
         expect(wrapped(1, 'two', nop)).to_raise(badarg(3))
     - it accepts correct argument types:
@@ -964,13 +976,13 @@ specify typecheck:
         wrapped = f('inner(string, int...)', mkmagic)
     - it diagnoses missing arguments:
         expect(wrapped()).to_raise(badarg(1, 'string'))
-        expect(wrapped('foo')).to_raise(badarg(2, 'int'))
+        expect(wrapped('foo')).to_raise(badarg(2, 'integer'))
     - it diagnoses wrong argument types:
         expect(wrapped(false)).to_raise(badarg(1, 'string', 'boolean'))
-        expect(wrapped('foo', false)).to_raise(badarg(2, 'int', 'boolean'))
-        expect(wrapped('foo', 1, false)).to_raise(badarg(3, 'int', 'boolean'))
+        expect(wrapped('foo', false)).to_raise(badarg(2, 'integer', 'boolean'))
+        expect(wrapped('foo', 1, false)).to_raise(badarg(3, 'integer', 'boolean'))
         expect(wrapped('foo', 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, false)).
-           to_raise(badarg(12, 'int', 'boolean'))
+           to_raise(badarg(12, 'integer', 'boolean'))
     - it accepts correct argument types:
         expect(wrapped('foo', 1)).to_be 'MAGIC'
         expect(wrapped('foo', 1, 2)).to_be 'MAGIC'
@@ -981,7 +993,7 @@ specify typecheck:
       - before:
           wrapped = f('inner([int])', mkmagic)
       - it diagnoses wrong argument types:
-          expect(wrapped(false)).to_raise(badarg(1, 'int', 'boolean'))
+          expect(wrapped(false)).to_raise(badarg(1, 'integer', 'boolean'))
       - it diagnoses too many arguments:
           expect(wrapped(1, nop)).to_raise(badarg(2))
       - it accepts correct argument types:
@@ -994,10 +1006,10 @@ specify typecheck:
           expect(wrapped()).to_raise(badarg(1, 'string'))
       - it diagnoses wrong argument types:
           expect(wrapped(false)).to_raise(badarg(1, 'string', 'boolean'))
-          expect(wrapped('foo', false)).to_raise(badarg(2, 'int', 'boolean'))
-          expect(wrapped('foo', 1, false)).to_raise(badarg(3, 'int', 'boolean'))
+          expect(wrapped('foo', false)).to_raise(badarg(2, 'integer', 'boolean'))
+          expect(wrapped('foo', 1, false)).to_raise(badarg(3, 'integer', 'boolean'))
           expect(wrapped('foo', 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, false)).
-             to_raise(badarg(12, 'int', 'boolean'))
+             to_raise(badarg(12, 'integer', 'boolean'))
       - it accepts correct argument types:
           expect(wrapped('foo')).to_be 'MAGIC'
           expect(wrapped('foo', 1)).to_be 'MAGIC'
@@ -1010,10 +1022,10 @@ specify typecheck:
           expect(wrapped()).to_raise(badarg(1, 'string'))
       - it diagnoses wrong argument types:
           expect(wrapped(false)).to_raise(badarg(1, 'string', 'boolean'))
-          expect(wrapped('foo', false)).to_raise(badarg(2, 'int', 'boolean'))
-          expect(wrapped('foo', 1, false)).to_raise(badarg(3, 'int', 'boolean'))
+          expect(wrapped('foo', false)).to_raise(badarg(2, 'integer', 'boolean'))
+          expect(wrapped('foo', 1, false)).to_raise(badarg(3, 'integer', 'boolean'))
           expect(wrapped('foo', 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, false)).
-             to_raise(badarg(12, 'int', 'boolean'))
+             to_raise(badarg(12, 'integer', 'boolean'))
       - it accepts correct argument types:
           expect(wrapped('foo')).to_be 'MAGIC'
           expect(wrapped('foo', 1)).to_be 'MAGIC'
@@ -1039,11 +1051,11 @@ specify typecheck:
     - before:
         wrapped = f('inner([string], int)', mkmagic)
     - it diagnoses missing arguments:
-        expect(wrapped()).to_raise(badarg(1, 'string or int'))
-        expect(wrapped('one')).to_raise(badarg(2, 'int'))
+        expect(wrapped()).to_raise(badarg(1, 'string or integer'))
+        expect(wrapped('one')).to_raise(badarg(2, 'integer'))
     - it diagnoses wrong argument types:
-        expect(wrapped(false)).to_raise(badarg(1, 'string or int', 'boolean'))
-        expect(wrapped('one', false)).to_raise(badarg(2, 'int', 'boolean'))
+        expect(wrapped(false)).to_raise(badarg(1, 'string or integer', 'boolean'))
+        expect(wrapped('one', false)).to_raise(badarg(2, 'integer', 'boolean'))
     - it diagnoses too many arguments:
         expect(wrapped('one', 2, false)).to_raise(badarg(3))
         expect(wrapped(1, false)).to_raise(badarg(2))
@@ -1068,7 +1080,7 @@ specify typecheck:
     - before:
         wrapped = f('inner(?any...) => int or nil', id)
     - it diagnoses wrong result types:
-        expect(wrapped(false)).to_raise(badresult(1, 'int or nil', 'boolean'))
+        expect(wrapped(false)).to_raise(badresult(1, 'integer or nil', 'boolean'))
     - it diagnoses too many results:
         expect(wrapped(1, nop)).to_raise(badresult(2))
     - it accepts correct result types:
@@ -1079,10 +1091,10 @@ specify typecheck:
     - before:
         wrapped = f('inner(?any...) => int, string', id)
     - it diagnoses missing results:
-        expect(wrapped()).to_raise(badresult(1, 'int'))
+        expect(wrapped()).to_raise(badresult(1, 'integer'))
         expect(wrapped(1)).to_raise(badresult(2, 'string'))
     - it diagnoses wrong result types:
-        expect(wrapped(false)).to_raise(badresult(1, 'int', 'boolean'))
+        expect(wrapped(false)).to_raise(badresult(1, 'integer', 'boolean'))
         expect(wrapped(1, false)).to_raise(badresult(2, 'string', 'boolean'))
     - it diagnoses too many results:
         expect(wrapped(1, 'two', false)).to_raise(badresult(3))
@@ -1093,7 +1105,7 @@ specify typecheck:
     - before:
         wrapped = f('inner(?any...) => ?int, string', id)
     - it diagnoses wrong result types:
-        expect(wrapped(false)).to_raise(badresult(1, 'int or nil', 'boolean'))
+        expect(wrapped(false)).to_raise(badresult(1, 'integer or nil', 'boolean'))
         expect(wrapped(1, false)).to_raise(badresult(2, 'string', 'boolean'))
         expect(wrapped(nil, false)).to_raise(badresult(2, 'string', 'boolean'))
     - it diagnoses too many results:
@@ -1107,10 +1119,10 @@ specify typecheck:
     - before:
         wrapped = f('inner(?any...) => int, string or string', id)
     - it diagnoses missing results:
-        expect(wrapped()).to_raise(badresult(1, 'int or string'))
+        expect(wrapped()).to_raise(badresult(1, 'integer or string'))
         expect(wrapped(1)).to_raise(badresult(2, 'string'))
     - it diagnoses wrong result types:
-        expect(wrapped(false)).to_raise(badresult(1, 'int or string', 'boolean'))
+        expect(wrapped(false)).to_raise(badresult(1, 'integer or string', 'boolean'))
     - it diagnoses too many results:
         expect(wrapped(1, 'two', nop)).to_raise(badresult(3))
     - it accepts correct result types:
@@ -1124,7 +1136,7 @@ specify typecheck:
         expect(wrapped()).to_raise(badresult(2, 'string'))
         expect(wrapped(1)).to_raise(badresult(2, 'string'))
     - it diagnoses wrong result types:
-        expect(wrapped(false)).to_raise(badresult(1, 'int or nil', 'boolean'))
+        expect(wrapped(false)).to_raise(badresult(1, 'integer or nil', 'boolean'))
         expect(wrapped(1, false)).to_raise(badresult(2, 'string', 'boolean'))
     - it diagnoses too many results:
         expect(wrapped(1, 'two', nop)).to_raise(badresult(3))
@@ -1137,10 +1149,10 @@ specify typecheck:
     - before:
         wrapped = f('inner(?any...) => [int], string', id)
     - it diagnoses missing results:
-        expect(wrapped()).to_raise(badresult(1, 'int or string'))
+        expect(wrapped()).to_raise(badresult(1, 'integer or string'))
         expect(wrapped(1)).to_raise(badresult(2, 'string'))
     - it diagnoses wrong result types:
-        expect(wrapped(false)).to_raise(badresult(1, 'int or string', 'boolean'))
+        expect(wrapped(false)).to_raise(badresult(1, 'integer or string', 'boolean'))
     - it diagnoses too many results:
         expect(wrapped(1, 'two', nop)).to_raise(badresult(3))
     - it accepts correct result types:
@@ -1173,7 +1185,7 @@ specify typecheck:
       - before:
           wrapped = f('inner(?any...) => [int]', id)
       - it diagnoses wrong result types:
-          expect(wrapped(false)).to_raise(badresult(1, 'int', 'boolean'))
+          expect(wrapped(false)).to_raise(badresult(1, 'integer', 'boolean'))
       - it diagnoses too many results:
           expect(wrapped(1, nop)).to_raise(badresult(2))
       - it accepts correct result types:
@@ -1186,10 +1198,10 @@ specify typecheck:
           expect(wrapped()).to_raise(badresult(1, 'string'))
       - it diagnoses wrong result types:
           expect(wrapped(false)).to_raise(badresult(1, 'string', 'boolean'))
-          expect(wrapped('foo', false)).to_raise(badresult(2, 'int', 'boolean'))
-          expect(wrapped('foo', 1, false)).to_raise(badresult(3, 'int', 'boolean'))
+          expect(wrapped('foo', false)).to_raise(badresult(2, 'integer', 'boolean'))
+          expect(wrapped('foo', 1, false)).to_raise(badresult(3, 'integer', 'boolean'))
           expect(wrapped('foo', 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, false)).
-             to_raise(badresult(12, 'int', 'boolean'))
+             to_raise(badresult(12, 'integer', 'boolean'))
       - it accepts correct result types:
           expect({wrapped('foo')}).to_equal {'foo'}
           expect({wrapped('foo', 1)}).to_equal {'foo', 1}
@@ -1202,10 +1214,10 @@ specify typecheck:
           expect(wrapped()).to_raise(badresult(1, 'string'))
       - it diagnoses wrong result types:
           expect(wrapped(false)).to_raise(badresult(1, 'string', 'boolean'))
-          expect(wrapped('foo', false)).to_raise(badresult(2, 'int', 'boolean'))
-          expect(wrapped('foo', 1, false)).to_raise(badresult(3, 'int', 'boolean'))
+          expect(wrapped('foo', false)).to_raise(badresult(2, 'integer', 'boolean'))
+          expect(wrapped('foo', 1, false)).to_raise(badresult(3, 'integer', 'boolean'))
           expect(wrapped('foo', 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, false)).
-            to_raise(badresult(12, 'int', 'boolean'))
+            to_raise(badresult(12, 'integer', 'boolean'))
       - it accepts correct result types:
           expect({wrapped('foo')}).to_equal {'foo'}
           expect({wrapped('foo', 1)}).to_equal {'foo', 1}
@@ -1216,13 +1228,13 @@ specify typecheck:
     - before:
         wrapped = f('inner(?any...) => [string], int', id)
     - it diagnoses missing results:
-        expect(wrapped()).to_raise(badresult(1, 'string or int'))
-        expect(wrapped 'one').to_raise(badresult(2, 'int'))
+        expect(wrapped()).to_raise(badresult(1, 'string or integer'))
+        expect(wrapped 'one').to_raise(badresult(2, 'integer'))
     - it diagnoses wrong result types:
         expect(wrapped(false)).
-           to_raise(badresult(1, 'string or int', 'boolean'))
+           to_raise(badresult(1, 'string or integer', 'boolean'))
         expect(wrapped('one', false)).
-           to_raise(badresult(2, 'int', 'boolean'))
+           to_raise(badresult(2, 'integer', 'boolean'))
     - it diagnoses too many results:
         expect(wrapped('one', 2, false)).to_raise(badresult(3))
         expect(wrapped(1, false)).to_raise(badresult(2))

@@ -447,6 +447,8 @@ local function extramsg_mismatch(expectedtypes, actual, index)
             t[i] = 'function'
          elseif v == 'bool' then
             t[i] = 'boolean'
+         elseif v == 'int' then
+            t[i] = 'integer'
          elseif v == 'any' then
             t[i] = 'any value'
          elseif v == 'file' then

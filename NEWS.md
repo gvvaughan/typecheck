@@ -2,6 +2,12 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### Bug fixes
+
+  - No matter whether 'int' or 'integer' is specified, always use
+    'integer' in error messages, for consistency with 'bool' as an
+    alias of 'boolean'.
+
 
 ## Noteworthy changes in release 2,1 (2020-04-24) [stable]
 
