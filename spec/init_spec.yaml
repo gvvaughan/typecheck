@@ -1253,13 +1253,13 @@ specify typecheck:
       expect(f '?bool').to_contain 'boolean or nil expected, '
       expect(f 'string|table').to_contain 'string or table expected, '
   - it returns expected container types:
-      expect(f('table of int', nil, 1)).to_contain 'table of ints expected, '
+      expect(f('table of int', nil, 1)).to_contain 'table of integers expected, '
       expect(f('table of int|bool', nil, 1)).
-         to_contain 'table of ints or booleans expected, '
+         to_contain 'table of integers or booleans expected, '
       expect(f('table of int|bool|string', nil, 1)).
-         to_contain 'table of ints, booleans or strings expected, '
+         to_contain 'table of integers, booleans or strings expected, '
       expect(f('table of int|bool|string|table', nil, 1)).
-         to_contain 'table of ints, booleans, strings or tables expected, '
+         to_contain 'table of integers, booleans, strings or tables expected, '
   - it returns the actual type:
       expect(f('int')).to_contain ', got no value'
       expect(f('int', false)).to_contain ', got boolean'

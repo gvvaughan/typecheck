@@ -8,6 +8,10 @@
     'integer' in error messages, for consistency with 'bool' as an
     alias of 'boolean'.
 
+  - When 'table of int', 'list of funcs', 'table of bool' or
+    similar are specified, consistently use 'table of integers',
+    'list of functions', 'table of booleans', etc.
+
 
 ## Noteworthy changes in release 2,1 (2020-04-24) [stable]
 

@@ -405,10 +405,11 @@ end
 local EXTRAMSG_XFORMS = {
    extramsg_gsub('#table', 'non-empty table'),
    extramsg_gsub('#list', 'non-empty list'),
-   extramsg_gsub('(%S+ of [^,%s]-)s? ', '%1s '),
-   extramsg_gsub('(%S+ of [^,%s]-)s?,', '%1s,'),
-   extramsg_gsub('(s, [^,%s]-)s? ', '%1s '),
-   extramsg_gsub('(s, [^,%s]-)s?,', '%1s,'),
+   extramsg_gsub('(%S+ of) bool([,%s])', '%1 boolean%2'),
+   extramsg_gsub('(%S+ of) func([,%s])', '%1 function%2'),
+   extramsg_gsub('(%S+ of) int([,%s])', '%1 integer%2'),
+   extramsg_gsub('(%S+ of [^,%s]-)s?([,%s])', '%1s%2'),
+   extramsg_gsub('(s, [^,%s]-)s?([,%s])', '%1s%2'),
    extramsg_gsub('(of .-)s? or ([^,%s]-)s? ', '%1s or %2s '),
 }
 
