@@ -4,7 +4,7 @@ Gradual type checking for Lua functions
 Copyright (C) 2014-2022 [Gary V. Vaughan][github]
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
-[![travis-ci status](https://secure.travis-ci.org/gvvaughan/typecheck.png?branch=master)](http://travis-ci.org/gvvaughan/typecheck/builds)
+[![workflow status](https://github.com/gvvaughan/typecheck/actions/workflows/spec.yml/badge.svg?branch=master)](https://github.com/gvvaughan/typecheck/actions)
 [![codecov.io](https://codecov.io/gh/gvvaughan/typecheck/branch/master/graph/badge.svg)](https://codecov.io/gh/gvvaughan/typecheck)
 
 A Luaish run-time gradual type checking system, for argument and return
