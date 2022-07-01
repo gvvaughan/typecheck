@@ -26,8 +26,6 @@ return {
    -- (exclude overrules include, do not include
    -- the .lua extension, path separator is always '/')
    ['include'] = {
-      'lib/typecheck/_base$',
-      'lib/typecheck/_strict$',
       'lib/typecheck/init$',
       'lib/typecheck/version$',
    },

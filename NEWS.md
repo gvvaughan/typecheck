@@ -2,6 +2,14 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### New Features
+
+  - Support importing into another project directly with:
+
+    ```sh
+    $ cp ../typecheck/lib/typecheck/init.lua lib/typecheck.lua
+    ```
+
 ### Bug fixes
 
   - No matter whether 'int' or 'integer' is specified, always use

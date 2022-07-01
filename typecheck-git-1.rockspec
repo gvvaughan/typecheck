@@ -29,8 +29,6 @@ build = {
    type = 'builtin',
    modules = {
       ['typecheck']            = 'lib/typecheck/init.lua',
-      ['typecheck._base']      = 'lib/typecheck/_base.lua',
-      ['typecheck._strict']    = 'lib/typecheck/_strict.lua',
       ['typecheck.version']    = 'lib/typecheck/version.lua',
    },
    copy_directories = {'doc'},

@@ -26,47 +26,361 @@
 ]]
 
 
-local _ = {
-   base = require 'typecheck._base',
-   strict = require 'typecheck._strict',
-}
 
-local _ENV = _.strict {
-   _debug = require 'std._debug',
-   concat = table.concat,
-   error = error,
-   find = string.find,
-   floor = math.floor,
-   format = string.format,
-   getfenv = _.base.getfenv,
-   getmetamethod = _.base.getmetamethod,
-   getmetatable = getmetatable,
-   gsub = string.gsub,
-   insert = table.insert,
-   io_type = io.type,
-   ipairs = ipairs,
-   len = _.base.len,
-   match = string.match,
-   next = next,
-   pack = _.base.pack,
-   pairs = pairs,
-   pcall = pcall,
-   rawset = rawset,
-   remove = table.remove,
-   require = require,
-   setfenv = _.base.setfenv,
-   setmetatable = setmetatable,
-   sort = table.sort,
-   sub = string.sub,
-   tointeger = _.base.tointeger,
-   tonumber = tonumber,
-   tostring = tostring,
-   type = type,
-   types = _.base.types,
-   unpack = _.base.unpack,
-}
+--[[ ====================== ]]--
+--[[ Load optional modules. ]]--
+--[[ ====================== ]]--
 
-_ = nil
+
+local strict
+do
+   local setfenv = rawget(_G, 'setfenv') or function() end
+   local ok, _debug = pcall(require, 'std._debug.init')
+   if not ok then
+      _debug = { argcheck = false }
+   elseif _debug.strict then
+      ok, strict = pcall(require, 'std.strict.init')
+   end
+   if not ok then
+      strict = function(env, level)
+         setfenv(1+(level or 1), env)
+         return env
+      end
+   end
+end
+
+
+local _ENV = strict(_G)
+
+
+
+--[[ ================== ]]--
+--[[ Lua normalization. ]]--
+--[[ ================== ]]--
+
+
+local _debug = require 'std._debug'
+local concat = table.concat
+local find = string.find
+local floor = math.floor
+local format = string.format
+local gsub = string.gsub
+local insert = table.insert
+local io_type = io.type
+local match = string.match
+local remove = table.remove
+local sort = table.sort
+local sub = string.sub
+
+
+-- Return callable objects.
+-- @function callable
+-- @param x an object or primitive
+-- @return `true` if *x* can be called, otherwise `false`
+-- @usage
+--   (callable(functable) or function()end)(args, ...)
+local function callable(x)
+   -- Careful here!
+   -- Most versions of Lua don't recurse functables, so make sure you
+   -- always put a real function in __call metamethods.  Consequently,
+   -- no reason to recurse here.
+   -- func=function() print 'called' end
+   -- func() --> 'called'
+   -- functable=setmetatable({}, {__call=func})
+   -- functable() --> 'called'
+   -- nested=setmetatable({}, {__call=function(self, ...) return functable(...)end})
+   -- nested() -> 'called'
+   -- notnested=setmetatable({}, {__call=functable})
+   -- notnested()
+   -- --> stdin:1: attempt to call global 'nested' (a table value)
+   -- --> stack traceback:
+   -- -->	stdin:1: in main chunk
+   -- -->		[C]: in ?
+   if type(x) == 'function' then
+      return x
+   end
+   return (getmetatable(x) or {}).__call
+end
+
+
+-- Return named metamethod, if callable, otherwise `nil`.
+-- @param x item to act on
+-- @string n name of metamethod to look up
+-- @treturn function|nil metamethod function, if callable, otherwise `nil`
+local function getmetamethod(x, n)
+   return callable((getmetatable(x) or {})[n])
+end
+
+
+-- Length of a string or table object without using any metamethod.
+-- @function rawlen
+-- @tparam string|table x object to act on
+-- @treturn int raw length of *x*
+-- @usage
+--    --> 0
+--    rawlen(setmetatable({}, {__len=function() return 42}))
+local function rawlen(x)
+   -- Lua 5.1 does not implement rawlen, and while # operator ignores
+   -- __len metamethod, `nil` in sequence is handled inconsistently.
+   if type(x) ~= 'table' then
+      return #x
+   end
+
+   local n = #x
+   for i = 1, n do
+      if x[i] == nil then
+         return i -1
+      end
+   end
+   return n
+end
+
+
+-- Deterministic, functional version of core Lua `#` operator.
+--
+-- Respects `__len` metamethod (like Lua 5.2+).   Otherwise, always return
+-- one less than the lowest integer index with a `nil` value in *x*, where
+-- the `#` operator implementation might return the size of the array part
+-- of a table.
+-- @function len
+-- @param x item to act on
+-- @treturn int the length of *x*
+-- @usage
+--    x = {1, 2, 3, nil, 5}
+--    --> 5 3
+--    print(#x, len(x))
+local function len(x)
+   return (getmetamethod(x, '__len') or rawlen)(x)
+end
+
+
+--- Return a list of given arguments, with field `n` set to the length.
+--
+-- The returned table also has a `__len` metamethod that returns `n`, so
+-- `ipairs` and `unpack` behave sanely when there are `nil` valued elements.
+-- @function pack
+-- @param ... tuple to act on
+-- @treturn table packed list of *...* values, with field `n` set to
+--    number of tuple elements (including any explicit `nil` elements)
+-- @see unpack
+-- @usage
+--    --> 5
+--    len(pack(nil, 2, 5, nil, nil))
+local pack = (function(f)
+   local pack_mt = {
+      __len = function(self)
+         return self.n
+      end,
+   }
+
+   local pack_fn = f or function(...)
+      return {n=select('#', ...), ...}
+   end
+
+   return function(...)
+      return setmetatable(pack_fn(...), pack_mt)
+   end
+end)(rawget(_G, "pack"))
+
+
+-- Like Lua `pairs` iterator, but respect `__pairs` even in Lua 5.1.
+-- @function pairs
+-- @tparam table t table to act on
+-- @treturn function iterator function
+-- @treturn table *t*, the table being iterated over
+-- @return the previous iteration key
+-- @usage
+--    for k, v in pairs {'a', b='c', foo=42} do process(k, v) end
+local pairs = (function(f)
+   if not f(setmetatable({},{__pairs=function() return false end})) then
+      return f
+   end
+
+   return function(t)
+      return(getmetamethod(t, '__pairs') or f)(t)
+   end
+end)(pairs)
+
+
+-- Convert a number to an integer and return if possible, otherwise `nil`.
+-- @function math.tointeger
+-- @param x object to act on
+-- @treturn[1] integer *x* converted to an integer if possible
+-- @return[2] `nil` otherwise
+local tointeger = (function(f)
+   if not f then
+      -- No host tointeger implementationm use our own.
+      return function(x)
+         if type(x) == 'number' and x - floor(x) == 0.0 then
+            return x
+         end
+      end
+
+   elseif f '1' ~= nil then
+      -- Don't perform implicit string-to-number conversion!
+      return function(x)
+         if type(x) == 'number' then
+            return f(x)
+         end
+      end
+   end
+
+   -- Host tointeger is good!
+   return f
+end)(math.tointeger or false)
+
+
+-- Get a function or functable environment.
+--
+-- This version of getfenv works on all supported Lua versions, and
+-- knows how to unwrap functables.
+-- @function getfenv
+-- @tparam function|int fn stack level, C or Lua function or functable
+--    to act on
+-- @treturn table the execution environment of *fn*
+-- @usage
+--    callers_environment = getfenv(1)
+local getfenv = (function(f)
+   local debug_getfenv = debug.getfenv
+   local debug_getinfo = debug.getinfo
+   local debug_getupvalue = debug.getupvalue
+
+   if debug_getfenv then
+
+      return function(fn)
+         local n = tointeger(fn or 1)
+         if n then
+            if n > 0 then
+               -- Adjust for this function's stack frame, if fn is non-zero.
+               n = n + 1
+            end
+
+            -- Return an additional nil result to defeat tail call elimination
+            -- which would remove a stack frame and break numeric *fn* count.
+            return f(n), nil
+         end
+
+         if type(fn) ~= 'function' then
+            -- Unwrap functables:
+            -- No need to recurse because Lua doesn't support nested functables.
+            -- __call can only (sensibly) be a function, so no need to adjust
+            -- stack frame offset either.
+            fn =(getmetatable(fn) or {}).__call or fn
+         end
+
+         -- In Lua 5.1, only debug.getfenv works on C functions; but it
+         -- does not work on stack counts.
+         return debug_getfenv(fn)
+      end
+
+   else
+
+      -- Thanks to http://lua-users.org/lists/lua-l/2010-06/msg00313.html
+      return function(fn)
+         if fn == 0 then
+            return _G
+         end
+         local n = tointeger(fn or 1)
+         if n then
+            fn = debug_getinfo(n + 1, 'f').func
+         elseif type(fn) ~= 'function' then
+            fn = (getmetatable(fn) or {}).__call or fn
+         end
+
+         local name, env
+         local up = 0
+         repeat
+            up = up + 1
+            name, env = debug_getupvalue(fn, up)
+         until name == '_ENV' or name == nil
+         return env
+      end
+
+   end
+end)(rawget(_G, 'getfenv'))
+
+
+-- Set a function or functable environment.
+--
+-- This version of setfenv works on all supported Lua versions, and
+-- knows how to unwrap functables.
+-- @function setfenv
+-- @tparam function|int fn stack level, C or Lua function or functable
+--    to act on
+-- @tparam table env new execution environment for *fn*
+-- @treturn function function acted upon
+-- @usage
+--    function clearenv(fn) return setfenv(fn, {}) end
+local setfenv = (function(f)
+   local debug_getinfo = debug.getinfo
+   local debug_getupvalue = debug.getupvalue
+   local debug_setfenv = debug.setfenv
+   local debug_setupvalue = debug.setupvalue
+   local debug_upvaluejoin = debug.upvaluejoin
+
+   if debug_setfenv then
+
+      return function(fn, env)
+         local n = tointeger(fn or 1)
+         if n then
+            if n > 0 then
+               n = n + 1
+            end
+            return f(n, env), nil
+         end
+         if type(fn) ~= 'function' then
+            fn =(getmetatable(fn) or {}).__call or fn
+         end
+         return debug_setfenv(fn, env)
+      end
+
+   else
+
+      -- Thanks to http://lua-users.org/lists/lua-l/2010-06/msg00313.html
+      return function(fn, env)
+         local n = tointeger(fn or 1)
+         if n then
+            if n > 0 then
+               n = n + 1
+            end
+            fn = debug_getinfo(n, 'f').func
+         elseif type(fn) ~= 'function' then
+            fn =(getmetatable(fn) or {}).__call or fn
+         end
+
+         local up, name = 0, nil
+         repeat
+            up = up + 1
+            name = debug_getupvalue(fn, up)
+         until name == '_ENV' or name == nil
+         if name then
+            debug_upvaluejoin(fn, up, function() return name end, 1)
+            debug_setupvalue(fn, up, env)
+         end
+         return n ~= 0 and fn or nil
+      end
+
+   end
+end)(rawget(_G, 'setfenv'))
+
+
+-- Either `table.unpack` in newer-, or `unpack` in older Lua implementations.
+-- Always defaulting to full packed table unpacking when no index arguments
+-- are passed.
+-- @function unpack
+-- @tparam table t table to act on
+-- @int[opt=1] i first index to unpack
+-- @int[opt=len(t)] j last index to unpack
+-- @return ... values of numeric indices of *t*
+-- @see pack
+-- @usage
+--    local a, b, c = unpack(pack(nil, 2, nil))
+--    assert(a == nil and b == 2 and c == nil)
+local unpack = (function(f)
+   return function(t, i, j)
+      return f(t, tointeger(i) or 1, tointeger(j) or len(t))
+   end
+end)(rawget(_G, "unpack") or table.unpack)
 
 
 
@@ -83,11 +397,6 @@ local function copy(dest, src)
       dest[k] = v
    end
    return dest
-end
-
-
-local function iscallable(x)
-   return type(x) == 'function' or getmetamethod(x, '__call')
 end
 
 
@@ -172,7 +481,7 @@ do
       argscheck = function(name, ...)
          return setmetatable(pack(...), {
             __concat = function(checks, inner)
-               if not iscallable(inner) then
+               if not callable(inner) then
                   error("attempt to annotate non-callable value with 'argscheck'", 2)
                end
                return function(...)
@@ -282,7 +591,7 @@ local types = setmetatable({
 
    -- Accept function valued or `__call` metamethod carrying argu[i].
    callable = function(argu, i)
-      return check('callable', argu, i, iscallable)
+      return check('callable', argu, i, callable)
    end,
 
    -- Accept argu[i] if it is an integer valued number, or can be
