@@ -32,22 +32,48 @@
 --[[ ====================== ]]--
 
 
-local strict
-do
-   local setfenv = rawget(_G, 'setfenv') or function() end
-   local ok, _debug = pcall(require, 'std._debug.init')
+local _debug = (function()
+   local ok, r = pcall(require, 'std._debug')
    if not ok then
-      _debug = { argcheck = false }
-   elseif _debug.strict then
-      ok, strict = pcall(require, 'std.strict.init')
+      r = setmetatable({
+         -- If this module was required, but there's no std._debug, safe to
+         -- assume we do want runtime argchecks!
+         argcheck = true,
+         -- Similarly, if std.strict is available, but there's no _std.debug,
+         -- then apply strict global symbol checks to this module!
+         strict = true,
+      }, {
+         __call = function(self, x)
+            self.argscheck = (x ~= false)
+         end,
+      })
    end
-   if not ok then
-      strict = function(env, level)
-         setfenv(1+(level or 1), env)
-         return env
+
+   return r
+end)()
+
+
+local strict = (function()
+   local setfenv = rawget(_G, 'setfenv') or function() end
+
+   -- No strict global symbol checks with no std.strict module, even
+   -- if we found std._debug and requested that!
+   local r = function(env, level)
+      setfenv(1+(level or 1), env)
+      return env
+   end
+
+   if _debug.strict then
+      -- Specify `.init` submodule to make sure we only accept
+      -- lua-stdlib/strict, and not the old strict module from
+      -- lua-stdlib/lua-stdlib.
+      local ok, m = pcall(require, 'std.strict.init')
+      if ok then
+         r = m
       end
    end
-end
+   return r
+end)()
 
 
 local _ENV = strict(_G)
@@ -59,7 +85,6 @@ local _ENV = strict(_G)
 --[[ ================== ]]--
 
 
-local _debug = require 'std._debug'
 local concat = table.concat
 local find = string.find
 local floor = math.floor
