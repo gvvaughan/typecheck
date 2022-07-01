@@ -401,16 +401,16 @@ end
 
 
 local function split(s, sep)
-   local r, patt = {}
+   local r, pattern = {}, nil
    if sep == '' then
-      patt = '(.)'
+      pattern = '(.)'
       r[#r + 1] = ''
    else
-      patt = '(.-)' ..(sep or '%s+')
+      pattern = '(.-)' ..(sep or '%s+')
    end
    local b, slen = 0, len(s)
    while b <= slen do
-      local e, n, m = find(s, patt, b + 1)
+      local _, n, m = find(s, pattern, b + 1)
       r[#r + 1] = m or sub(s, b + 1, slen)
       b = n   or slen + 1
    end
@@ -444,7 +444,7 @@ end
 -- Return the checked function directly if `_debug.argcheck` is reset,
 -- otherwise use check function arguments using predicate functions in
 -- the corresponding position in the decorator call.
--- @function argscheck
+-- @function checktypes
 -- @string name function name to use in error messages
 -- @tparam funct predicate return true if checked function argument is
 --    valid, otherwise return nil and an error message suitable for
@@ -454,18 +454,17 @@ end
 -- @raises argerror when an argument validator returns failure
 -- @see argerror
 -- @usage
---    local unpack = argscheck('unpack', types.table) ..
+--    local unpack = checktypes('unpack', types.table) ..
 --    function(t, i, j)
 --       return table.unpack(t, i or 1, j or #t)
 --    end
-local argscheck
-do
-   -- Set argscheck according to whether argcheck was required by _debug.
+local checktypes = (function()
+   -- Set checktypes according to whether argcheck was required by _debug.
    if _debug.argcheck then
 
       ARGCHECK_FRAME = 1
 
-      local function icalls(name, checks, argu)
+      local function icalls(checks, argu)
          return function(state, i)
             if i < state.checks.n then
                i = i + 1
@@ -478,19 +477,19 @@ do
          end, {argu=argu, checks=checks}, 0
       end
 
-      argscheck = function(name, ...)
+      return function(name, ...)
          return setmetatable(pack(...), {
             __concat = function(checks, inner)
                if not callable(inner) then
-                  error("attempt to annotate non-callable value with 'argscheck'", 2)
+                  error("attempt to annotate non-callable value with 'checktypes'", 2)
                end
                return function(...)
                   local argu = pack(...)
-                  for i, expected, got in icalls(name, checks, argu) do
+                  for i, expected, got in icalls(checks, argu) do
                      if got or expected then
-                        local buf, extramsg = {}
+                        local buf, extramsg = {}, nil
                         if expected then
-                           got = got or 'got ' .. type(argu[i])
+                           got = got or ('got ' .. type(argu[i]))
                            buf[#buf +1] = expected .. ' expected, ' .. got
                         elseif got then
                            buf[#buf +1] = got
@@ -516,7 +515,7 @@ do
    else
 
       -- Return `inner` untouched, for no runtime overhead!
-      argscheck = function(...)
+      return function(...)
          return setmetatable({}, {
             __concat = function(_, inner)
                return inner
@@ -525,7 +524,7 @@ do
       end
 
    end
-end
+end)()
 
 
 local function resulterror(name, i, extramsg, level)
@@ -643,7 +642,8 @@ local types = setmetatable({
 local function any(...)
    local fns = {...}
    return function(argu, i)
-      local buf, expected, got, r = {}
+      local buf = {}
+      local expected, got, r
       for _, predicate in ipairs(fns) do
          r = pack(predicate(argu, i))
          expected, got = r[1], r[2]
@@ -704,9 +704,9 @@ local function _type(x)
 end
 
 
-local function extramsg_gsub(match, replace)
+local function extramsg_gsub(pattern, replace)
    return function(s)
-      return (gsub(s, match, replace))
+      return (gsub(s, pattern, replace))
    end
 end
 
@@ -784,58 +784,58 @@ end
 -- @param actual object being typechecked
 -- @treturn boolean `true` if *actual* is of type *check*, otherwise
 --    `false`
-local function checktype(check, actual)
-   if check == 'any' and actual ~= nil then
+local function checktype(expected, actual)
+   if expected == 'any' and actual ~= nil then
       return true
-   elseif check == 'file' and io_type(actual) == 'file' then
+   elseif expected == 'file' and io_type(actual) == 'file' then
       return true
-   elseif check == 'functor' or check == 'callable' then
+   elseif expected == 'functor' or expected == 'callable' then
       if (getmetatable(actual) or {}).__call ~= nil then
          return true
       end
    end
 
    local actualtype = type(actual)
-   if check == actualtype then
+   if expected == actualtype then
       return true
-   elseif check == 'bool' and actualtype == 'boolean' then
+   elseif expected == 'bool' and actualtype == 'boolean' then
       return true
-   elseif check == '#table' then
+   elseif expected == '#table' then
       if actualtype == 'table' and next(actual) then
          return true
       end
-   elseif check == 'func' or check == 'callable' then
+   elseif expected == 'func' or expected == 'callable' then
       if actualtype == 'function' then
          return true
       end
-   elseif check == 'int' then
+   elseif expected == 'int' then
       if actualtype == 'number' and actual == floor(actual) then
          return true
       end
-   elseif type(check) == 'string' and sub(check, 1, 1) == ':' then
-      if check == actual then
+   elseif type(expected) == 'string' and sub(expected, 1, 1) == ':' then
+      if expected == actual then
          return true
       end
    end
 
    actualtype = _type(actual)
-   if check == actualtype then
+   if expected == actualtype then
       return true
-   elseif check == 'list' or check == '#list' then
+   elseif expected == 'list' or expected == '#list' then
       if actualtype == 'table' or actualtype == 'List' then
-         local len, count = len(actual), 0
+         local n, count = len(actual), 0
          local i = next(actual)
          repeat
             if i ~= nil then
                count = count + 1
             end
             i = next(actual, i)
-         until i == nil or count > len
-         if count == len and (check == 'list' or count > 0) then
+         until i == nil or count > n
+         if count == n and (expected == 'list' or count > 0) then
             return true
          end
       end
-   elseif check == 'object' then
+   elseif expected == 'object' then
       if actualtype ~= 'table' and type(actual) == 'table' then
          return true
       end
@@ -845,12 +845,12 @@ local function checktype(check, actual)
 end
 
 
-local function typesplit(types)
-   if type(types) == 'string' then
-      types = split(gsub(types, '%s+or%s+', '|'), '%s*|%s*')
+local function typesplit(typespec)
+   if type(typespec) == 'string' then
+      typespec = split(gsub(typespec, '%s+or%s+', '|'), '%s*|%s*')
    end
    local r, seen, add_nil = {}, {}, false
-   for _, v in ipairs(types) do
+   for _, v in ipairs(typespec) do
       local m = match(v, '^%?(.+)$')
       if m then
          add_nil, v = true, m
@@ -872,11 +872,11 @@ local function checktypespec(expected, actual)
 
    -- Check actual has one of the types from expected
    for _, expect in ipairs(expected) do
-      local check, contents = match(expect, '^(%S+) of (%S-)s?$')
-      check = check or expect
+      local container, contents = match(expect, '^(%S+) of (%S-)s?$')
+      container = container or expect
 
       -- Does the type of actual check out?
-      local ok = checktype(check, actual)
+      local ok = checktype(container, actual)
 
       -- For 'table of things', check all elements are a thing too.
       if ok and contents and type(actual) == 'table' then
@@ -928,7 +928,7 @@ local function permute(t)
    end
 
    local p = {{}}
-   for i, v in ipairs(t) do
+   for _, v in ipairs(t) do
       local optional = match(v, '%[(.+)%]')
 
       if optional == nil then
@@ -970,8 +970,8 @@ local function projectuniq(fkey, tt)
 end
 
 
-local function parsetypes(types)
-   local r, permutations = {}, permute(types)
+local function parsetypes(typespec)
+   local r, permutations = {}, permute(typespec)
    for i = 1, #permutations[1] do
       r[i] = projectuniq(i, permutations)
    end
@@ -981,218 +981,220 @@ end
 
 
 
-local argcheck, normalize_argscheck   -- forward declarations
+local argcheck = (function()
+   if _debug.argcheck then
 
-if _debug.argcheck then
-
-   --- Return index of the first mismatch between types and values, or `nil`.
-   -- @tparam table typelist a list of expected types
-   -- @tparam table valuelist a table of arguments to compare
-   -- @treturn int|nil position of first mismatch in *typelist*
-   local function typematch(typelist, valuelist)
-      local n = #typelist
-      for i = 1, n do   -- normal parameters
-         local ok = pcall(argcheck, 'pcall', i, typelist[i], valuelist[i])
-         if not ok then
-            return i
+      return function(name, i, expected, actual, level)
+         level = level or 1
+         local _, err = checktypespec(expected, actual)
+         if err then
+            argerror(name, i, err, level + 1)
          end
       end
-      for i = n + 1, valuelist.n do -- additional values against final type
-         local ok = pcall(argcheck, 'pcall', i, typelist[n], valuelist[i])
-         if not ok then
-            return i
-         end
+
+   else
+
+      return function(...)
+         return ...
       end
+
    end
+end)()
 
 
-   local function empty(t)
-      return not next(t)
-   end
+local argscheck = (function()
+   if _debug.argcheck then
 
-   -- Pattern to normalize: [types...] to [types]...
-   local last_pat = '^%[([^%]%.]+)%]?(%.*)%]?'
-
-   --- Diagnose mismatches between *valuelist* and type *permutations*.
-   -- @tparam table valuelist list of actual values to be checked
-   -- @tparam table argt table of precalculated values and handler functiens
-   local function diagnose(valuelist, argt)
-      local permutations = argt.permutations
-
-      local bestmismatch, t = 0
-      for i, typelist in ipairs(permutations) do
-         local mismatch = typematch(typelist, valuelist)
-         if mismatch == nil then
-            bestmismatch, t = nil, nil
-            break -- every *valuelist* matched types from this *typelist*
-         elseif mismatch > bestmismatch then
-            bestmismatch, t = mismatch, permutations[i]
+      --- Return index of the first mismatch between types and values, or `nil`.
+      -- @tparam table typelist a list of expected types
+      -- @tparam table valuelist a table of arguments to compare
+      -- @treturn int|nil position of first mismatch in *typelist*
+      local function typematch(typelist, valuelist)
+         local n = #typelist
+         for i = 1, n do   -- normal parameters
+            local ok = pcall(argcheck, 'pcall', i, typelist[i], valuelist[i])
+            if not ok then
+               return i
+            end
+         end
+         for i = n + 1, valuelist.n do -- additional values against final type
+            local ok = pcall(argcheck, 'pcall', i, typelist[n], valuelist[i])
+            if not ok then
+               return i
+            end
          end
       end
 
-      if bestmismatch ~= nil then
-         -- Report an error for all possible types at bestmismatch index.
-         local i, expected = bestmismatch
-         if t.dots and i > #t then
-            expected = typesplit(t[#t])
-         else
-            expected = projectuniq(i, permutations)
+
+      --- Diagnose mismatches between *valuelist* and type *permutations*.
+      -- @tparam table valuelist list of actual values to be checked
+      -- @tparam table argt table of precalculated values and handler functiens
+      local function diagnose(valuelist, argt)
+         local permutations = argt.permutations
+         local bestmismatch, t
+
+         bestmismatch = 0
+         for i, typelist in ipairs(permutations) do
+            local mismatch = typematch(typelist, valuelist)
+            if mismatch == nil then
+               bestmismatch, t = nil, nil
+               break -- every *valuelist* matched types from this *typelist*
+            elseif mismatch > bestmismatch then
+               bestmismatch, t = mismatch, permutations[i]
+            end
          end
 
-         -- This relies on the `permute()` algorithm leaving the longest
-         -- possible permutation(with dots if necessary) at permutations[1].
-         local typelist = permutations[1]
+         if bestmismatch ~= nil then
+            -- Report an error for all possible types at bestmismatch index.
+            local i, expected = bestmismatch, nil
+            if t.dots and i > #t then
+               expected = typesplit(t[#t])
+            else
+               expected = projectuniq(i, permutations)
+            end
 
-         -- For 'container of things', check all elements are a thing too.
-         if typelist[i] then
-            local check, contents = match(typelist[i], '^(%S+) of (%S-)s?$')
-            if contents and type(valuelist[i]) == 'table' then
-               for k, v in pairs(valuelist[i]) do
-                  if not checktype(contents, v) then
-                     argt.badtype(i, extramsg_mismatch(expected, v, k), 3)
+            -- This relies on the `permute()` algorithm leaving the longest
+            -- possible permutation(with dots if necessary) at permutations[1].
+            local typelist = permutations[1]
+
+            -- For 'container of things', check all elements are a thing too.
+            if typelist[i] then
+               local contents = match(typelist[i], '^%S+ of (%S-)s?$')
+               if contents and type(valuelist[i]) == 'table' then
+                  for k, v in pairs(valuelist[i]) do
+                     if not checktype(contents, v) then
+                        argt.badtype(i, extramsg_mismatch(expected, v, k), 3)
+                     end
                   end
                end
             end
-         end
 
-         -- Otherwise the argument type itself was mismatched.
-         if t.dots or #t >= valuelist.n then
-            argt.badtype(i, extramsg_mismatch(expected, valuelist[i]), 3)
-         end
-      end
-
-      local n, t = valuelist.n, t or permutations[1]
-      if t and t.dots == nil and n > #t then
-         argt.badtype(#t + 1, extramsg_toomany(argt.bad, #t, n), 3)
-      end
-   end
-
-
-   function argcheck(name, i, expected, actual, level)
-      level = level or 1
-
-      local ok, err = checktypespec(expected, actual)
-      if err then
-         argerror(name, i, err, level + 1)
-      end
-   end
-
-
-   -- Pattern to extract: fname([types]?[, types]*)
-   local args_pat = '^%s*([%w_][%.%:%d%w_]*)%s*%(%s*(.*)%s*%)'
-
-   function normalize_argscheck(decl, inner)
-      -- Parse 'fname(argtype, argtype, argtype...)'.
-      local fname, argtypes = match(decl, args_pat)
-      if argtypes == '' then
-         argtypes = {}
-      elseif argtypes then
-         argtypes = split(argtypes, '%s*,%s*')
-      else
-         fname = match(decl, '^%s*([%w_][%.%:%d%w_]*)')
-      end
-
-      -- Precalculate vtables once to make multiple calls faster.
-      local input, output = {
-         bad = 'argument',
-         badtype = function(i, extramsg, level)
-            level = level or 1
-            argerror(fname, i, extramsg, level + 1)
-         end,
-         permutations = permute(argtypes),
-      }
-
-      -- Parse '... => returntype, returntype, returntype...'.
-      local returntypes = match(decl, '=>%s*(.+)%s*$')
-      if returntypes then
-         local i, permutations = 0, {}
-         for _, group in ipairs(split(returntypes, '%s+or%s+')) do
-            returntypes = split(group, ',%s*')
-            for _, t in ipairs(permute(returntypes)) do
-               i = i + 1
-               permutations[i] = t
+            -- Otherwise the argument type itself was mismatched.
+            if t.dots or #t >= valuelist.n then
+               argt.badtype(i, extramsg_mismatch(expected, valuelist[i]), 3)
             end
          end
 
-         -- Ensure the longest permutation is first in the list.
-         sort(permutations, function(a, b)
-            return #a > #b
-         end)
+         local n = valuelist.n
+         t = t or permutations[1]
+         if t and t.dots == nil and n > #t then
+            argt.badtype(#t + 1, extramsg_toomany(argt.bad, #t, n), 3)
+         end
+      end
 
-         output = {
-            bad = 'result',
+
+      -- Pattern to extract: fname([types]?[, types]*)
+      local args_pattern = '^%s*([%w_][%.%:%d%w_]*)%s*%(%s*(.*)%s*%)'
+
+      return function(decl, inner)
+         -- Parse 'fname(argtype, argtype, argtype...)'.
+         local fname, argtypes = match(decl, args_pattern)
+         if argtypes == '' then
+            argtypes = {}
+         elseif argtypes then
+            argtypes = split(argtypes, '%s*,%s*')
+         else
+            fname = match(decl, '^%s*([%w_][%.%:%d%w_]*)')
+         end
+
+         -- Precalculate vtables once to make multiple calls faster.
+         local input = {
+            bad = 'argument',
             badtype = function(i, extramsg, level)
                level = level or 1
-               resulterror(fname, i, extramsg, level + 1)
+               argerror(fname, i, extramsg, level + 1)
             end,
-            permutations = permutations,
+            permutations = permute(argtypes),
          }
-      end
 
-      local wrap_function = function(my_inner)
-         return function(...)
-            local argt = pack(...)
-
-            -- Don't check type of self if fname has a ':' in it.
-            if find(fname, ':') then
-               remove(argt, 1)
-               argt.n = argt.n - 1
+         -- Parse '... => returntype, returntype, returntype...'.
+         local output, returntypes = nil, match(decl, '=>%s*(.+)%s*$')
+         if returntypes then
+            local i, permutations = 0, {}
+            for _, group in ipairs(split(returntypes, '%s+or%s+')) do
+               returntypes = split(group, ',%s*')
+               for _, t in ipairs(permute(returntypes)) do
+                  i = i + 1
+                  permutations[i] = t
+               end
             end
 
-            -- Diagnose bad inputs.
-            diagnose(argt, input)
+            -- Ensure the longest permutation is first in the list.
+            sort(permutations, function(a, b)
+               return #a > #b
+            end)
 
-            -- Propagate outer environment to inner function.
-            if type(my_inner) == 'table' then
-               setfenv((getmetatable(my_inner) or {}).__call, getfenv(1))
-            else
-               setfenv(my_inner, getfenv(1))
+            output = {
+               bad = 'result',
+               badtype = function(i, extramsg, level)
+                  level = level or 1
+                  resulterror(fname, i, extramsg, level + 1)
+               end,
+               permutations = permutations,
+            }
+         end
+
+         local wrap_function = function(my_inner)
+            return function(...)
+               local argt = pack(...)
+
+               -- Don't check type of self if fname has a ':' in it.
+               if find(fname, ':') then
+                  remove(argt, 1)
+                  argt.n = argt.n - 1
+               end
+
+               -- Diagnose bad inputs.
+               diagnose(argt, input)
+
+               -- Propagate outer environment to inner function.
+               if type(my_inner) == 'table' then
+                  setfenv((getmetatable(my_inner) or {}).__call, getfenv(1))
+               else
+                  setfenv(my_inner, getfenv(1))
+               end
+
+               -- Execute.
+               local results = pack(my_inner(...))
+
+               -- Diagnose bad outputs.
+               if returntypes then
+                  diagnose(results, output)
+               end
+
+               return unpack(results, 1, results.n)
             end
+         end
 
-            -- Execute.
-            local results = pack(my_inner(...))
-
-            -- Diagnose bad outputs.
-            if returntypes then
-               diagnose(results, output)
-            end
-
-            return unpack(results, 1, results.n)
+         if inner then
+            return wrap_function(inner)
+         else
+            return setmetatable({}, {
+               __concat = function(_, concat_inner)
+                  return wrap_function(concat_inner)
+               end
+            })
          end
       end
 
-      if inner then
-         return wrap_function(inner)
-      else
-         return setmetatable({}, {
-            __concat = function(_, concat_inner)
-               return wrap_function(concat_inner)
-            end
-         })
+   else
+
+      -- Turn off argument checking if _debug is false, or a table containing
+      -- a false valued `argcheck` field.
+      return function(_, inner)
+         if inner then
+            return inner
+         else
+            return setmetatable({}, {
+               __concat = function(_, concat_inner)
+                  return concat_inner
+               end
+            })
+         end
       end
+
    end
-
-else
-
-   -- Turn off argument checking if _debug is false, or a table containing
-   -- a false valued `argcheck` field.
-
-   argcheck = function(...)
-      return ...
-   end
-   normalize_argscheck = function(decl, inner)
-      if inner then
-         return inner
-      else
-         return setmetatable({}, {
-            __concat = function(_, concat_inner)
-               return concat_inner
-            end
-         })
-      end
-   end
-
-end
+end)()
 
 
 local T = types
@@ -1247,7 +1249,7 @@ return setmetatable({
    --    local function case(with, branches)
    --       argcheck('std.functional.case', 2, '#table', branches)
    --       ...
-   argcheck = argscheck(
+   argcheck = checktypes(
       'argcheck', T.stringy, T.integer, T.stringy, T.accept, opt(T.integer)
    ) .. argcheck,
 
@@ -1269,7 +1271,7 @@ return setmetatable({
    --          argerror('std.io.slurp', 1, err, 2)
    --       end
    --       ...
-   argerror = argscheck(
+   argerror = checktypes(
       'argerror', T.stringy, T.integer, T.accept, opt(T.integer)
    ) .. argerror,
 
@@ -1315,9 +1317,9 @@ return setmetatable({
    --    function(with, branches)
    --       ...
    --    end
-   argscheck = argscheck(
+   argscheck = checktypes(
       'argscheck', T.stringy, opt(T.callable)
-   ) .. normalize_argscheck,
+   ) .. argscheck,
 
    --- Checks the type of *actual* against the *expected* typespec
    -- @function check
@@ -1399,7 +1401,7 @@ return setmetatable({
    --       if type(result) ~= 'string' then
    --          resulterror('std.io.slurp', 1, err, 2)
    --       end
-   resulterror = argscheck(
+   resulterror = checktypes(
       'resulterror', T.stringy, T.integer, T.accept, opt(T.integer)
    ) .. resulterror,
 
