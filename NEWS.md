@@ -20,6 +20,29 @@
     similar are specified, consistently use 'table of integers',
     'list of functions', 'table of booleans', etc.
 
+  - Diagnose passing of incompatible objects with a `__tostring`
+    metamethod to parameters that require a string instead of silently
+    coercing to a string.
+
+### Incompatible changes
+
+  - `types.stringy` is no longer available; silently converting any
+    object passed to a string parameter by calling the `__tostring`
+    metamethod has unintended consequences for the function behaviour
+    and behaves differently when typechecking is disabled and the
+    conversion to string is consequently disabled.
+
+    1. If you know you want an argument converted to a string before
+       passing to typechecked function, you should call `tostring` on
+       it at the call-site.
+    2. If you know you want tables with `__tostring` metamethods to
+       be valid arguments, make the typespec 'string|table' and call
+       `tostring` on it in your function.
+
+  - `argcheck`, `argerror`, `argscheck` and `resulterror` no longer
+    accept a table with a `__tostring` metamethod as a substitute for
+    an actual string for those parameters that require a string.
+
 
 ## Noteworthy changes in release 2,1 (2020-04-24) [stable]
 

@@ -637,13 +637,6 @@ local types = setmetatable({
       end
    end,
 
-   -- Accept string valued or `__string` metamethod carrying argu[i].
-   stringy = function(argu, i)
-      return check('string', argu, i, function(x)
-         return type(x) == 'string' or getmetamethod(x, '__tostring')
-      end)
-   end,
-
    -- Accept non-nil valued argu[i].
    value = function(argu, i)
       if i > argu.n then
@@ -1275,7 +1268,7 @@ return setmetatable({
    --       argcheck('std.functional.case', 2, '#table', branches)
    --       ...
    argcheck = checktypes(
-      'argcheck', T.stringy, T.integer, T.stringy, T.accept, opt(T.integer)
+      'argcheck', T.string, T.integer, T.string, T.accept, opt(T.integer)
    ) .. argcheck,
 
    --- Raise a bad argument error.
@@ -1297,7 +1290,7 @@ return setmetatable({
    --       end
    --       ...
    argerror = checktypes(
-      'argerror', T.stringy, T.integer, T.accept, opt(T.integer)
+      'argerror', T.string, T.integer, T.accept, opt(T.integer)
    ) .. argerror,
 
    --- Wrap a function definition with argument type and arity checking.
@@ -1343,7 +1336,7 @@ return setmetatable({
    --       ...
    --    end
    argscheck = checktypes(
-      'argscheck', T.stringy, opt(T.callable)
+      'argscheck', T.string, opt(T.callable)
    ) .. argscheck,
 
    --- Checks the type of *actual* against the *expected* typespec
@@ -1427,7 +1420,7 @@ return setmetatable({
    --          resulterror('std.io.slurp', 1, err, 2)
    --       end
    resulterror = checktypes(
-      'resulterror', T.stringy, T.integer, T.accept, opt(T.integer)
+      'resulterror', T.string, T.integer, T.accept, opt(T.integer)
    ) .. resulterror,
 
    --- A collection of @{ArgCheck} functions used by `normalize` APIs.
@@ -1436,8 +1429,6 @@ return setmetatable({
    -- @tfield ArgCheck callable accept a function or functor
    -- @tfield ArgCheck integer accept integer valued number
    -- @tfield ArgCheck nil accept only `nil`
-   -- @tfield ArgCheck stringy accept a string or `__tostring` metamethod
-   --    bearing object
    -- @tfield ArgCheck table accept any table
    -- @tfield ArgCheck value accept any non-`nil` value
    types = types,

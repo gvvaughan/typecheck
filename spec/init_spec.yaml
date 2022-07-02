@@ -34,7 +34,7 @@ specify typecheck:
     - 'it diagnoses argument #1 type not string':
         stringy = setmetatable({}, {__tostring = function() end})
         expect(f(nil)).to_raise 'string expected, got nil'
-        expect(f(stringy)).not_to_raise 'string expected'
+        expect(f(stringy)).to_raise 'string expected'
     - 'it diagnoses missing argument #2':
         expect(f 'X').to_raise 'integer expected, got no value'
     - 'it diagnoses argument #2 type not number':
@@ -208,7 +208,7 @@ specify typecheck:
     - 'it diagnoses argument #1 type not string':
         stringy = setmetatable({}, {__tostring = function() end})
         expect(f(nil)).to_raise 'string expected, got nil'
-        expect(f(stringy)).not_to_raise 'string expected'
+        expect(f(stringy)).to_raise 'string expected'
     - 'it diagnoses missing argument #2':
         expect(f 'X').to_raise 'integer expected, got no value'
     - 'it diagnoses argument #2 type not number':
@@ -405,6 +405,34 @@ specify typecheck:
       ]]
 
       f, badarg = init(M, this_module, 'argcheck')
+
+  - context with bad arguments:
+    - 'it diagnoses missing argument #1':
+        expect(f()).to_raise 'string expected, got no value'
+    - 'it diagnoses argument #1 type not string':
+        stringy = setmetatable({}, {__tostring = function() end})
+        expect(f(nil)).to_raise 'string expected, got nil'
+        expect(f(stringy)).to_raise 'string expected'
+    - 'it diagnoses missing argument #2':
+        expect(f 'X').to_raise 'integer expected, got no value'
+    - 'it diagnoses argument #2 type not number':
+        expect(f('X', nil)).to_raise 'integer expected, got nil'
+        expect(f('X', '1')).not_to_raise 'integer expected'
+    - 'it diagnoses argument #2 type not integer':
+        expect(f('X', 1.0001)).to_raise 'number has no integer representation'
+        expect(f('X', '1.0001')).to_raise 'number has no integer representation'
+    - 'it diagnoses missing argument #3':
+        expect(f('X', 1)).to_raise 'string expected, got no value'
+    - 'it diagnoses argument #3 type not string':
+        stringy = setmetatable({}, {__tostring = function() end})
+        expect(f('X', 1, nil)).to_raise 'string expected, got nil'
+        expect(f('X', 1, stringy)).to_raise 'string expected'
+    - 'it diagnoses argument #5 type not number': |
+        expect(f('X', 1, 'ohnoes', nil, false)).
+           to_raise "bad argument #5 to 'argcheck' (integer expected, got boolean)"
+    - 'it diagnoses argument #5 type not integer': |
+        expect(f('X', 99999.0, 'ohnoes', nil, 0.99999)).
+           to_raise "bad argument #5 to 'argcheck' (number has no integer representation)"
 
   - context std._debug set to nil:
     - before: |
@@ -856,6 +884,14 @@ specify typecheck:
       id = function(...)
          return ...
       end
+
+  - context with bad arguments:
+    - 'it diagnoses missing argument #1':
+        expect(f()).to_raise 'string expected, got no value'
+    - 'it diagnoses argument #1 type not string':
+        stringy = setmetatable({}, {__tostring = function() end})
+        expect(f(nil)).to_raise 'string expected, got nil'
+        expect(f(stringy)).to_raise 'string expected'
 
   - it returns the wrapped function:
       expect(wrapped).not_to_be(inner)
