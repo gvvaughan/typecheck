@@ -179,7 +179,7 @@ local function len(x)
 end
 
 
---- Return a list of given arguments, with field `n` set to the length.
+-- Return a list of given arguments, with field `n` set to the length.
 --
 -- The returned table also has a `__len` metamethod that returns `n`, so
 -- `ipairs` and `unpack` behave sanely when there are `nil` valued elements.
