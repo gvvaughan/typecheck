@@ -100,10 +100,10 @@ Documentation
 -------------
 
 The latest release is [documented with LDoc][github.io].
-Pre-built HTML files are included in the [release tarball][].
+Pre-built HTML files are included in the [release tarball][releases].
 
 [github.io]: http://gvvaughan.github.io/typecheck
-[release]: http://gvvaughan.github.io/typecheck/releases
+[releases]: https://github.com/gvvaughan/typecheck/releases
 
 
 Bug reports and code contributions
