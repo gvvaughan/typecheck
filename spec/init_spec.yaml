@@ -553,13 +553,13 @@ specify typecheck:
         ]])).to_contain_error ':14: bad argument'
 
   - context with primitives:
-    - it diagnoses missing types:
-        expect(fn('bool', nil)).to_raise 'boolean expected, got no value'
-        expect(fn('boolean', nil)).to_raise 'boolean expected, got no value'
-        expect(fn('file', nil)).to_raise 'FILE* expected, got no value'
-        expect(fn('number', nil)).to_raise 'number expected, got no value'
-        expect(fn('string', nil)).to_raise 'string expected, got no value'
-        expect(fn('table', nil)).to_raise 'table expected, got no value'
+    - it diagnoses nil argument:
+        expect(fn('bool', nil)).to_raise 'boolean expected, got nil'
+        expect(fn('boolean', nil)).to_raise 'boolean expected, got nil'
+        expect(fn('file', nil)).to_raise 'FILE* expected, got nil'
+        expect(fn('number', nil)).to_raise 'number expected, got nil'
+        expect(fn('string', nil)).to_raise 'string expected, got nil'
+        expect(fn('table', nil)).to_raise 'table expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('bool', {0})).to_raise 'boolean expected, got table'
         expect(fn('boolean', {0})).to_raise 'boolean expected, got table'
@@ -577,8 +577,8 @@ specify typecheck:
         expect(fn('table', Object)).not_to_raise 'any error'
 
   - context with int:
-    - it diagnoses missing types:
-        expect(fn('int', nil)).to_raise 'integer expected, got no value'
+    - it diagnoses nil argument:
+        expect(fn('int', nil)).to_raise 'integer expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('int', false)).to_raise 'integer expected, got boolean'
         expect(fn('int', 1.234)).to_raise 'integer expected, got number'
@@ -589,8 +589,8 @@ specify typecheck:
         expect(fn('int', 0x1234)).not_to_raise 'any error'
         expect(fn('int', 1.234e3)).not_to_raise 'any error'
   - context with integer:
-    - it diagnoses missing types:
-        expect(fn('integer', nil)).to_raise 'integer expected, got no value'
+    - it diagnoses nil argument:
+        expect(fn('integer', nil)).to_raise 'integer expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('integer', false)).to_raise 'integer expected, got boolean'
         expect(fn('integer', 1.234)).to_raise 'integer expected, got number'
@@ -601,8 +601,8 @@ specify typecheck:
         expect(fn('integer', 0x1234)).not_to_raise 'any error'
         expect(fn('integer', 1.234e3)).not_to_raise 'any error'
   - context with constant string:
-    - it diagnoses missing types:
-        expect(fn(':foo', nil)).to_raise ':foo expected, got no value'
+    - it diagnoses nil argument:
+        expect(fn(':foo', nil)).to_raise ':foo expected, got nil'
     - it diagnoses mismatched types:
         expect(fn(':foo', false)).to_raise ':foo expected, got boolean'
         expect(fn(':foo', ':bar')).to_raise ':foo expected, got :bar'
@@ -612,11 +612,11 @@ specify typecheck:
   - context with callable types:
     - before:
         fctr = setmetatable({0}, {__call = function() end})
-    - it diagnoses missing types:
-        expect(fn('callable', nil)).to_raise 'callable expected, got no value'
-        expect(fn('func', nil)).to_raise 'function expected, got no value'
-        expect(fn('functor', nil)).to_raise 'functor expected, got no value'
-        expect(fn('function', nil)).to_raise 'function expected, got no value'
+    - it diagnoses nil argument:
+        expect(fn('callable', nil)).to_raise 'callable expected, got nil'
+        expect(fn('func', nil)).to_raise 'function expected, got nil'
+        expect(fn('functor', nil)).to_raise 'functor expected, got nil'
+        expect(fn('function', nil)).to_raise 'function expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('callable', {0})).to_raise 'callable expected, got table'
         expect(fn('func', fctr)).to_raise 'function expected, got functor'
@@ -629,11 +629,11 @@ specify typecheck:
         expect(fn('functor', fctr)).not_to_raise 'any error'
         expect(fn('function', fn)).not_to_raise 'any error'
   - context with table of homogenous elements:
-    - it diagnoses missing types:
+    - it diagnoses nil argument:
         expect(fn('table of boolean', nil)).
-           to_raise 'table expected, got no value'
+           to_raise 'table expected, got nil'
         expect(fn('table of booleans', nil)).
-           to_raise 'table expected, got no value'
+           to_raise 'table expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('table of file', io.stderr)).
            to_raise 'table expected, got file'
@@ -652,9 +652,9 @@ specify typecheck:
         expect(fn('table of string', {'f', 'o', 'o'})).not_to_raise 'any error'
         expect(fn('table of string', {b='b', a='a', r='r'})).not_to_raise 'any error'
   - context with non-empty table types:
-    - it diagnoses missing types:
+    - it diagnoses nil argument:
         expect(fn('#table', nil)).
-           to_raise 'non-empty table expected, got no value'
+           to_raise 'non-empty table expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('#table', false)).
            to_raise 'non-empty table expected, got boolean'
@@ -663,11 +663,11 @@ specify typecheck:
     - it matches types:
         expect(fn('#table', {0})).not_to_raise 'any error'
   - context with non-empty table of homogenous elements:
-    - it diagnoses missing types:
+    - it diagnoses nil argument:
         expect(fn('#table of boolean', nil)).
-           to_raise 'non-empty table expected, got no value'
+           to_raise 'non-empty table expected, got nil'
         expect(fn('#table of booleans', nil)).
-           to_raise 'non-empty table expected, got no value'
+           to_raise 'non-empty table expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('#table of file', {})).
            to_raise 'non-empty table expected, got empty table'
@@ -685,9 +685,9 @@ specify typecheck:
         expect(fn('#table of string', {'f', 'o', 'o'})).not_to_raise 'any error'
         expect(fn('#table of string', {b='b', a='a', r='r'})).not_to_raise 'any error'
   - context with list:
-    - it diagnonses missing types:
+    - it diagnonses nil argument:
         expect(fn('list', nil)).
-           to_raise 'list expected, got no value'
+           to_raise 'list expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('list', false)).
            to_raise 'list expected, got boolean'
@@ -699,11 +699,11 @@ specify typecheck:
         expect(fn('list', {})).not_to_raise 'any error'
         expect(fn('list', {1})).not_to_raise 'any error'
   - context with list of homogenous elements:
-    - it diagnoses missing types:
+    - it diagnoses nil argument:
         expect(fn('list of boolean', nil)).
-           to_raise 'list expected, got no value'
+           to_raise 'list expected, got nil'
         expect(fn('list of booleans', nil)).
-           to_raise 'list expected, got no value'
+           to_raise 'list expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('list of file', io.stderr)).
            to_raise 'list expected, got file'
@@ -721,9 +721,9 @@ specify typecheck:
         expect(fn('list of string', {'foo'})).not_to_raise 'any error'
         expect(fn('list of string', {'f', 'o', 'o'})).not_to_raise 'any error'
   - context with non-empty list:
-    - it diagnonses missing types:
+    - it diagnonses nil argument:
         expect(fn('#list', nil)).
-           to_raise 'non-empty list expected, got no value'
+           to_raise 'non-empty list expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('#list', false)).
            to_raise 'non-empty list expected, got boolean'
@@ -738,11 +738,11 @@ specify typecheck:
     - it matches types:
         expect(fn('#list', {1})).not_to_raise 'any error'
   - context with non-empty list of homogenous elements:
-    - it diagnoses missing types:
+    - it diagnoses nil argument:
         expect(fn('#list of boolean', nil)).
-           to_raise 'non-empty list expected, got no value'
+           to_raise 'non-empty list expected, got nil'
         expect(fn('#list of booleans', nil)).
-           to_raise 'non-empty list expected, got no value'
+           to_raise 'non-empty list expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('#list of file', {})).
            to_raise 'non-empty list expected, got empty table'
@@ -759,11 +759,11 @@ specify typecheck:
         expect(fn('#list of string', {'foo'})).not_to_raise 'any error'
         expect(fn('#list of string', {'f', 'o', 'o'})).not_to_raise 'any error'
   - context with container:
-    - it diagnoses missing types:
+    - it diagnoses nil argument:
         expect(fn('List of boolean', nil)).
-           to_raise 'List expected, got no value'
+           to_raise 'List expected, got nil'
         expect(fn('List of booleans', nil)).
-           to_raise 'List expected, got no value'
+           to_raise 'List expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('List of file', io.stderr)).
            to_raise 'List expected, got file'
@@ -781,11 +781,11 @@ specify typecheck:
         expect(fn('list of string', List {'foo'})).not_to_raise 'any error'
         expect(fn('list of string', List {'f', 'o', 'o'})).not_to_raise 'any error'
   - context with object:
-    - it diagnoses missing types:
-        expect(fn('object', nil)).to_raise 'object expected, got no value'
-        expect(fn('Object', nil)).to_raise 'Object expected, got no value'
-        expect(fn('Foo', nil)).to_raise 'Foo expected, got no value'
-        expect(fn('any', nil)).to_raise 'any value expected, got no value'
+    - it diagnoses nil argument:
+        expect(fn('object', nil)).to_raise 'object expected, got nil'
+        expect(fn('Object', nil)).to_raise 'Object expected, got nil'
+        expect(fn('Foo', nil)).to_raise 'Foo expected, got nil'
+        expect(fn('any', nil)).to_raise 'any value expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('object', {0})).to_raise 'object expected, got table'
         expect(fn('Object', {0})).to_raise 'Object expected, got table'
@@ -805,13 +805,13 @@ specify typecheck:
       expect(fn('any', Object)).not_to_raise 'any error'
       expect(fn('any', Foo {})).not_to_raise 'any error'
   - context with a list of valid types:
-    - it diagnoses missing elements:
+    - it diagnoses nil argument:
         expect(fn('string|table', nil)).
-           to_raise 'string or table expected, got no value'
+           to_raise 'string or table expected, got nil'
         expect(fn('string|list|#table', nil)).
-           to_raise 'string, list or non-empty table expected, got no value'
+           to_raise 'string, list or non-empty table expected, got nil'
         expect(fn('string|number|list|object', nil)).
-           to_raise 'string, number, list or object expected, got no value'
+           to_raise 'string, number, list or object expected, got nil'
     - it diagnoses mismatched elements:
         expect(fn('string|table', false)).
            to_raise 'string or table expected, got boolean'
@@ -936,7 +936,9 @@ specify typecheck:
     - before:
         wrapped = f('inner(#table)', mkmagic)
     - it diagnoses missing arguments:
-        expect(wrapped()).to_raise(badarg(1, 'non-empty table'))
+        expect(wrapped()).to_raise(badarg(1, 'non-empty table', 'no value'))
+    - it diagnoses nil arguments:
+        expect(wrapped(nil)).to_raise(badarg(1, 'non-empty table', 'nil'))
     - it diagnoses wrong argument types:
         expect(wrapped {}).to_raise(badarg(1, 'non-empty table', 'empty table'))
     - it diagnoses too many arguments:
@@ -948,8 +950,11 @@ specify typecheck:
     - before:
         wrapped = f('inner(table, function)', mkmagic)
     - it diagnoses missing arguments:
-        expect(wrapped()).to_raise(badarg(1, 'table'))
-        expect(wrapped({})).to_raise(badarg(2, 'function'))
+        expect(wrapped()).to_raise(badarg(1, 'table', 'no value'))
+        expect(wrapped({})).to_raise(badarg(2, 'function', 'no value'))
+    - it diagnoses nil arguments:
+        expect(wrapped(nil)).to_raise(badarg(1, 'table', 'nil'))
+        expect(wrapped({}, nil)).to_raise(badarg(2, 'function', 'nil'))
     - it diagnoses wrong argument types:
         expect(wrapped(false)).to_raise(badarg(1, 'table', 'boolean'))
         expect(wrapped({}, false)).to_raise(badarg(2, 'function', 'boolean'))
@@ -961,6 +966,12 @@ specify typecheck:
   - context when checking nil argument function:
     - before:
         wrapped = f('inner(?int, string)', mkmagic)
+    - it diagnoses missing arguments:
+        expect(wrapped()).to_raise(badarg(2, 'string', 'no value'))
+        expect(wrapped(1)).to_raise(badarg(2, 'string', 'no value'))
+    - it diagnoses nil arguments:
+        expect(wrapped(nil)).not_to_raise(badarg(2, 'string', 'nil'))
+        expect(wrapped(1, nil)).to_raise(badarg(2, 'string', 'nil'))
     - it diagnoses wrong argument types:
         expect(wrapped(false)).to_raise(badarg(1, 'integer or nil', 'boolean'))
         expect(wrapped(1, false)).to_raise(badarg(2, 'string', 'boolean'))
@@ -976,8 +987,11 @@ specify typecheck:
     - before:
         wrapped = f('inner([int], string)', mkmagic)
     - it diagnoses missing arguments:
-        expect(wrapped()).to_raise(badarg(1, 'integer or string'))
-        expect(wrapped(1)).to_raise(badarg(2, 'string'))
+        expect(wrapped()).to_raise(badarg(1, 'integer or string', 'no value'))
+        expect(wrapped(1)).to_raise(badarg(2, 'string', 'no value'))
+    - it diagnoses nil arguments:
+        expect(wrapped(nil)).to_raise(badarg(1, 'integer or string', 'nil'))
+        expect(wrapped(1, nil)).to_raise(badarg(2, 'string', 'nil'))
     - it diagnoses wrong argument types:
         expect(wrapped(false)).to_raise(badarg(1, 'integer or string', 'boolean'))
     - it diagnoses too many arguments:
@@ -1283,27 +1297,42 @@ specify typecheck:
   - before:
       f = M.extramsg_mismatch
 
-  - it returns the expected types:
-      expect(f 'nil').to_contain 'nil expected, '
-      expect(f 'bool').to_contain 'boolean expected, '
-      expect(f '?bool').to_contain 'boolean or nil expected, '
-      expect(f 'string|table').to_contain 'string or table expected, '
-  - it returns expected container types:
-      expect(f('table of int', nil, 1)).to_contain 'table of integers expected, '
-      expect(f('table of int|bool', nil, 1)).
-         to_contain 'table of integers or booleans expected, '
-      expect(f('table of int|bool|string', nil, 1)).
-         to_contain 'table of integers, booleans or strings expected, '
-      expect(f('table of int|bool|string|table', nil, 1)).
-         to_contain 'table of integers, booleans, strings or tables expected, '
-  - it returns the actual type:
-      expect(f('int')).to_contain ', got no value'
-      expect(f('int', false)).to_contain ', got boolean'
-      expect(f('int', {})).to_contain ', got empty table'
-  - it returns table field type:
-      expect(f('table of int', nil, 1)).to_contain ', got no value at index 1'
-      expect(f('table of int', 'two', 2)).to_contain ', got string at index 2'
-      expect(f('table of int|bool', 'five', 3)).to_contain ', got string at index 3'
+  - context old calling convention:
+    - it returns the expected types:
+        expect(f 'nil').to_contain 'nil expected, '
+        expect(f 'bool').to_contain 'boolean expected, '
+        expect(f '?bool').to_contain 'boolean or nil expected, '
+        expect(f 'string|table').to_contain 'string or table expected, '
+    - it returns expected container types:
+        expect(f('table of int', nil, 1)).to_contain 'table of integers expected, '
+        expect(f('table of int|bool', nil, 1)).
+          to_contain 'table of integers or booleans expected, '
+        expect(f('table of int|bool|string', nil, 1)).
+          to_contain 'table of integers, booleans or strings expected, '
+        expect(f('table of int|bool|string|table', nil, 1)).
+          to_contain 'table of integers, booleans, strings or tables expected, '
+    - it returns the actual type:
+        expect(f 'int').to_contain ', got nil'
+        expect(f('int', false)).to_contain ', got boolean'
+        expect(f('int', {})).to_contain ', got empty table'
+    - it returns table field type:
+        expect(f('table of int', nil, 1)).to_contain ', got nil at index 1'
+        expect(f('table of int', 'two', 2)).to_contain ', got string at index 2'
+        expect(f('table of int|bool', 'five', 3)).to_contain ', got string at index 3'
+  - context new calling convention:
+    - it returns the expected types:
+        expect(f(1, 'nil', {n=1})).to_contain 'nil expected, '
+        expect(f(1, 'bool', {n=1})).to_contain 'boolean expected, '
+        expect(f(1, '?bool', {n=1})).to_contain 'boolean or nil expected, '
+        expect(f(1, 'string|table', {n=1})).to_contain 'string or table expected, '
+    - it returns the actual type:
+        expect(f(1, 'bool', {n=0})).to_contain ', got no value'
+        expect(f(1, 'bool', {n=1})).to_contain ', got nil'
+        expect(f(1, 'bool', {n=1, false})).to_contain ', got boolean'
+        expect(f(1, 'bool', {n=1, {}})).to_contain ', got empty table'
+    - it diagnoses missing atguments:
+        expect(f(3, 'bool', {n=2})).to_contain 'boolean expected, got no value'
+        expect(f(3, 'bool', {n=3})).to_contain 'boolean expected, got nil'
 
 
 - describe extramsg_toomany:

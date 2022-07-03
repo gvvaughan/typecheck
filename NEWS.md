@@ -20,6 +20,9 @@
     similar are specified, consistently use 'table of integers',
     'list of functions', 'table of booleans', etc.
 
+  - Correctly diagnose unexpected `nil` arguments with 'got nil',
+    and missing arguments with 'got no value'.
+
   - Diagnose passing of incompatible objects with a `__tostring`
     metamethod to parameters that require a string instead of silently
     coercing to a string.

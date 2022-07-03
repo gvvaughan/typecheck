@@ -741,13 +741,26 @@ local EXTRAMSG_XFORMS = {
 }
 
 
-local function extramsg_mismatch(expectedtypes, actual, index)
-   local actualtype = _type(actual) or type(actual)
+local function extramsg_mismatch(i, expectedtypes, argu, key)
+   local actual, actualtype
+
+   if type(i) ~= 'number' then
+      -- Support the old (expectedtypes, actual, key) calling convention.
+      expectedtypes, actual, key, argu = i, expectedtypes, argu, nil
+      actualtype = _type(actual) or type(actual)
+   else
+      -- Support the new (i, expectedtypes, argu) convention, which can
+      -- diagnose missing arguments properly.
+      actual = argu[i]
+      if i > argu.n then
+         actualtype = 'no value'
+      else
+         actualtype = _type(actual) or type(actual)
+      end
+   end
 
    -- Tidy up actual type for display.
-   if actualtype == 'nil' then
-      actualtype = 'no value'
-   elseif actualtype == 'string' and sub(actual, 1, 1) == ':' then
+   if actualtype == 'string' and sub(actual, 1, 1) == ':' then
       actualtype = actual
    elseif type(actual) == 'table' then
       if actualtype == 'table' and (getmetatable(actual) or {}).__call ~= nil then
@@ -762,8 +775,8 @@ local function extramsg_mismatch(expectedtypes, actual, index)
       end
    end
 
-   if index then
-      actualtype = actualtype .. ' at index ' .. tostring(index)
+   if key then
+      actualtype = actualtype .. ' at index ' .. tostring(key)
    end
 
    -- Tidy up expected types for display.
@@ -781,7 +794,7 @@ local function extramsg_mismatch(expectedtypes, actual, index)
             t[i] = 'any value'
          elseif v == 'file' then
             t[i] = 'FILE*'
-         elseif not index then
+         elseif not key then
             t[i] = match(v, '(%S+) of %S+') or v
          else
             t[i] = v
@@ -798,7 +811,7 @@ end
 
 
 --- Compare *check* against type of *actual*. *check* must be a single type
--- @string check extended type name expected
+-- @string expected extended type name expected
 -- @param actual object being typechecked
 -- @treturn boolean `true` if *actual* is of type *check*, otherwise
 --    `false`
@@ -1089,7 +1102,7 @@ local argscheck = (function()
 
             -- Otherwise the argument type itself was mismatched.
             if t.dots or #t >= valuelist.n then
-               argt.badtype(i, extramsg_mismatch(expected, valuelist[i]), 3)
+               argt.badtype(i, extramsg_mismatch(i, expected, valuelist), 3)
             end
          end
 
@@ -1353,18 +1366,25 @@ return setmetatable({
 
    --- Format a type mismatch error.
    -- @function extramsg_mismatch
+   -- @int[opt] i index of *argu* to be matched with
    -- @string expected a pipe delimited list of matchable types
-   -- @param actual the actual argument to match with
-   -- @number[opt] index erroring container element index
+   -- @tparam table argu packed table of all arguments
+   -- @param[opt] key erroring container element key
    -- @treturn string formatted *extramsg* for this mismatch for @{argerror}
    -- @see argerror
    -- @see resulterror
    -- @usage
    --    if fmt ~= nil and type(fmt) ~= 'string' then
-   --       argerror('format', 1, extramsg_mismatch('?string', fmt))
+   --       argerror('format', 1, extramsg_mismatch(1, '?string', argu))
    --    end
-   extramsg_mismatch = function(expected, actual, index)
-      return extramsg_mismatch(typesplit(expected), actual, index)
+   extramsg_mismatch = function(i, expected, argu, key)
+      if tointeger(i) and type(expected) == 'string' then
+         expected = typesplit(expected)
+      else
+         -- support old (expected, actual, key) calling convention
+         i = typesplit(i)
+      end
+      return extramsg_mismatch(i, expected, argu, key)
    end,
 
    --- Format a too many things error.
