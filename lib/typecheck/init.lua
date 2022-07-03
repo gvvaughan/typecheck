@@ -232,7 +232,7 @@ end)(pairs)
 -- @treturn[1] integer *x* converted to an integer if possible
 -- @return[2] `nil` otherwise
 local tointeger = (function(f)
-   if not f then
+   if f == nil then
       -- No host tointeger implementationm use our own.
       return function(x)
          if type(x) == 'number' and x - floor(x) == 0.0 then
@@ -251,7 +251,7 @@ local tointeger = (function(f)
 
    -- Host tointeger is good!
    return f
-end)(math.tointeger or false)
+end)(math.tointeger)
 
 
 -- Get a function or functable environment.
