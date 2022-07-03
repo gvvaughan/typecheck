@@ -121,10 +121,9 @@ local function callable(x)
    -- --> stack traceback:
    -- -->	stdin:1: in main chunk
    -- -->		[C]: in ?
-   if type(x) == 'function' then
+   if type(x) == 'function' or (getmetatable(x) or {}).__call then
       return x
    end
-   return (getmetatable(x) or {}).__call
 end
 
 
