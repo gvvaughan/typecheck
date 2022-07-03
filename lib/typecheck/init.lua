@@ -731,6 +731,7 @@ end
 local EXTRAMSG_XFORMS = {
    extramsg_gsub('#table', 'non-empty table'),
    extramsg_gsub('#list', 'non-empty list'),
+   extramsg_gsub('functor', 'functable'),
    extramsg_gsub('(%S+ of) bool([,%s])', '%1 boolean%2'),
    extramsg_gsub('(%S+ of) func([,%s])', '%1 function%2'),
    extramsg_gsub('(%S+ of) int([,%s])', '%1 integer%2'),
@@ -763,7 +764,7 @@ local function extramsg_mismatch(i, expectedtypes, argu, key)
       actualtype = actual
    elseif type(actual) == 'table' then
       if actualtype == 'table' and (getmetatable(actual) or {}).__call ~= nil then
-         actualtype = 'functor'
+         actualtype = 'functable'
       elseif next(actual) == nil then
          local matchstr = ',' .. concat(expectedtypes, ',') .. ','
          if actualtype == 'table' and matchstr == ',#list,' then
@@ -819,7 +820,7 @@ local function checktype(expected, actual)
       return true
    elseif expected == 'file' and io_type(actual) == 'file' then
       return true
-   elseif expected == 'functor' or expected == 'callable' then
+   elseif expected == 'functable' or expected == 'callable' or expected == 'functor' then
       if (getmetatable(actual) or {}).__call ~= nil then
          return true
       end
@@ -1241,11 +1242,11 @@ return setmetatable({
    --
    --    #table    accept any non-empty table
    --    any       accept any non-nil argument type
-   --    callable  accept a function or a functor
+   --    callable  accept a function or a functable
    --    file      accept an open file object
    --    func      accept a function
    --    function  accept a function
-   --    functor   accept an object with a __call metamethod
+   --    functable accept an object with a __call metamethod
    --    int       accept an integer valued number
    --    list      accept a table where all keys are a contiguous 1-based integer range
    --    #list     accept any non-empty list
@@ -1445,7 +1446,7 @@ return setmetatable({
    --- A collection of @{ArgCheck} functions used by `normalize` APIs.
    -- @table types
    -- @tfield ArgCheck accept always succeeds
-   -- @tfield ArgCheck callable accept a function or functor
+   -- @tfield ArgCheck callable accept a function or functable
    -- @tfield ArgCheck integer accept integer valued number
    -- @tfield ArgCheck nil accept only `nil`
    -- @tfield ArgCheck table accept any table

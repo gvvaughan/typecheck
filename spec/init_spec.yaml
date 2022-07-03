@@ -611,23 +611,26 @@ specify typecheck:
         expect(fn(':foo', ':foo')).not_to_raise 'any error'
   - context with callable types:
     - before:
-        fctr = setmetatable({0}, {__call = function() end})
+        ftable = setmetatable({0}, {__call = function() end})
     - it diagnoses nil argument:
         expect(fn('callable', nil)).to_raise 'callable expected, got nil'
         expect(fn('func', nil)).to_raise 'function expected, got nil'
-        expect(fn('functor', nil)).to_raise 'functor expected, got nil'
+        expect(fn('functable', nil)).to_raise 'functable expected, got nil'
         expect(fn('function', nil)).to_raise 'function expected, got nil'
+        expect(fn('functor', nil)).to_raise 'functable expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('callable', {0})).to_raise 'callable expected, got table'
-        expect(fn('func', fctr)).to_raise 'function expected, got functor'
-        expect(fn('functor', fn)).to_raise 'functor expected, got function'
-        expect(fn('function', fctr)).to_raise 'function expected, got functor'
+        expect(fn('func', ftable)).to_raise 'function expected, got functable'
+        expect(fn('functable', fn)).to_raise 'functable expected, got function'
+        expect(fn('function', ftable)).to_raise 'function expected, got functable'
+        expect(fn('functor', fn)).to_raise 'functable expected, got function'
     - it matches types:
         expect(fn('callable', fn)).not_to_raise 'any error'
-        expect(fn('callable', fctr)).not_to_raise 'any error'
+        expect(fn('callable', ftable)).not_to_raise 'any error'
         expect(fn('func', function() end)).not_to_raise 'any error'
-        expect(fn('functor', fctr)).not_to_raise 'any error'
+        expect(fn('functable', ftable)).not_to_raise 'any error'
         expect(fn('function', fn)).not_to_raise 'any error'
+        expect(fn('functor', ftable)).not_to_raise 'any error'
   - context with table of homogenous elements:
     - it diagnoses nil argument:
         expect(fn('table of boolean', nil)).

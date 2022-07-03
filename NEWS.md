@@ -27,6 +27,11 @@
     metamethod to parameters that require a string instead of silently
     coercing to a string.
 
+  - Functable's are most definitely NOT functors as that term is used
+    by functional programmers.  The library will accept 'functor'
+    as a synonym for backwards compatibility, but otherwise we now
+    use the term functable everywhere to avoid confusion.
+
 ### Incompatible changes
 
   - `types.stringy` is no longer available; silently converting any
