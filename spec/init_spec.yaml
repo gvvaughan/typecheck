@@ -581,8 +581,8 @@ specify typecheck:
         expect(fn('int', nil)).to_raise 'integer expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('int', false)).to_raise 'integer expected, got boolean'
-        expect(fn('int', 1.234)).to_raise 'integer expected, got number'
-        expect(fn('int', 1234e-3)).to_raise 'integer expected, got number'
+        expect(fn('int', 1.234)).to_raise 'integer expected, got float'
+        expect(fn('int', 1234e-3)).to_raise 'integer expected, got float'
     - it matches types:
         expect(fn('int', 1)).not_to_raise 'any error'
         expect(fn('int', 1.0)).not_to_raise 'any error'
@@ -593,8 +593,8 @@ specify typecheck:
         expect(fn('integer', nil)).to_raise 'integer expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('integer', false)).to_raise 'integer expected, got boolean'
-        expect(fn('integer', 1.234)).to_raise 'integer expected, got number'
-        expect(fn('integer', 1234e-3)).to_raise 'integer expected, got number'
+        expect(fn('integer', 1.234)).to_raise 'integer expected, got float'
+        expect(fn('integer', 1234e-3)).to_raise 'integer expected, got float'
     - it matches types:
         expect(fn('integer', 1)).not_to_raise 'any error'
         expect(fn('integer', 1.0)).not_to_raise 'any error'

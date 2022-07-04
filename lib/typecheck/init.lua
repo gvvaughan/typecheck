@@ -254,6 +254,23 @@ local tointeger = (function(f)
 end)(math.tointeger)
 
 
+-- Return 'integer', 'float' or `nil` according to argument type.
+--
+-- To ensure the same behaviour on all host Lua implementations,
+-- this function returns 'float' for integer-equivalent floating
+-- values, even on Lua 5.3.
+-- @function math.type
+-- @param x object to act on
+-- @treturn[1] string 'integer', if *x* is a whole number
+-- @treturn[2] string 'float', for other numbers
+-- @return[3] `nil` otherwise
+local math_type = math.type or function(x)
+   if type(x) == 'number' then
+      return tointeger(x) and 'integer' or 'float'
+   end
+end
+
+
 -- Get a function or functable environment.
 --
 -- This version of getfenv works on all supported Lua versions, and
@@ -717,7 +734,7 @@ end
 
 
 local function _type(x)
-   return (getmetatable(x) or {})._type or io_type(x) or type(x)
+   return (getmetatable(x) or {})._type or io_type(x) or math_type(x) or type(x)
 end
 
 

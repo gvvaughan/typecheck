@@ -11,6 +11,13 @@
 
   - Accept either of 'integer' or 'int' in an argcheck typespec.
 
+  - When diagnosing a type mismatch, be specific about unexpected
+    'integer' or 'float' rather than just 'number'
+
+    ```
+    bad argument #1 to 'getfenv' (integer expected, got float)
+    ```
+
   - Support importing into another project directly with:
 
     ```sh
