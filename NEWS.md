@@ -9,6 +9,8 @@
     support, rather than having to divine if from the internals of
     `_debug.argcheck`.
 
+  - Accept either of 'integer' or 'int' in an argcheck typespec.
+
   - Support importing into another project directly with:
 
     ```sh

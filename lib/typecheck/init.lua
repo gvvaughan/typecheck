@@ -839,7 +839,7 @@ local function checktype(expected, actual)
       if actualtype == 'function' then
          return true
       end
-   elseif expected == 'int' then
+   elseif expected == 'int' or expected == 'integer' then
       if actualtype == 'number' and actual == floor(actual) then
          return true
       end
