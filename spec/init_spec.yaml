@@ -39,16 +39,15 @@ specify typecheck:
         expect(f 'X').to_raise 'integer expected, got no value'
     - 'it diagnoses argument #2 type not number':
         expect(f('X', nil)).to_raise 'integer expected, got nil'
-        expect(f('X', '1')).not_to_raise 'integer expected'
-    - 'it diagnoses argument #2 type not integer':
-        expect(f('X', 1.0001)).to_raise 'number has no integer representation'
-        expect(f('X', '1.0001')).to_raise 'number has no integer representation'
+        expect(f('X', 'X')).to_raise 'integer expected, got string'
+        expect(f('X', 1.0001)).to_raise 'float has no integer representation'
+        expect(f('X', '1.0001')).to_raise 'string has no integer representation'
     - 'it diagnoses argument #4 type not number': |
         expect(f('X', 1, 'ohnoes', false)).
            to_raise "bad argument #4 to 'resulterror' (integer expected, got boolean)"
     - 'it diagnoses argument #4 type not integer': |
         expect(f('X', 99999.0, 'ohnoes', 0.99999)).
-           to_raise "bad argument #4 to 'resulterror' (number has no integer representation)"
+           to_raise "bad argument #4 to 'resulterror' (float has no integer representation)"
 
   - it raises a result error: |
       expect(f('myfunc', 1)).to_raise "bad result #1 from 'myfunc'"
@@ -213,16 +212,15 @@ specify typecheck:
         expect(f 'X').to_raise 'integer expected, got no value'
     - 'it diagnoses argument #2 type not number':
         expect(f('X', nil)).to_raise 'integer expected, got nil'
-        expect(f('X', '1')).not_to_raise 'integer expected'
-    - 'it diagnoses argument #2 type not integer':
-        expect(f('X', 1.0001)).to_raise 'number has no integer representation'
-        expect(f('X', '1.0001')).to_raise 'number has no integer representation'
+        expect(f('X', '1')).not_to_raise 'integer expected, got string'
+        expect(f('X', 1.0001)).to_raise 'float has no integer representation'
+        expect(f('X', '1.0001')).to_raise 'string has no integer representation'
     - 'it diagnoses argument #4 type not number': |
         expect(f('X', 1, 'ohnoes', false)).
            to_raise "bad argument #4 to 'argerror' (integer expected, got boolean)"
     - 'it diagnoses argument #4 type not integer': |
         expect(f('X', 99999.0, 'ohnoes', 0.99999)).
-           to_raise "bad argument #4 to 'argerror' (number has no integer representation)"
+           to_raise "bad argument #4 to 'argerror' (float has no integer representation)"
 
   - it raises an argument error: |
       expect(f('myfunc', 1)).to_raise "bad argument #1 to 'myfunc'"
@@ -419,8 +417,8 @@ specify typecheck:
         expect(f('X', nil)).to_raise 'integer expected, got nil'
         expect(f('X', '1')).not_to_raise 'integer expected'
     - 'it diagnoses argument #2 type not integer':
-        expect(f('X', 1.0001)).to_raise 'number has no integer representation'
-        expect(f('X', '1.0001')).to_raise 'number has no integer representation'
+        expect(f('X', 1.0001)).to_raise 'float has no integer representation'
+        expect(f('X', '1.0001')).to_raise 'string has no integer representation'
     - 'it diagnoses missing argument #3':
         expect(f('X', 1)).to_raise 'string expected, got no value'
     - 'it diagnoses argument #3 type not string':
@@ -432,7 +430,7 @@ specify typecheck:
            to_raise "bad argument #5 to 'argcheck' (integer expected, got boolean)"
     - 'it diagnoses argument #5 type not integer': |
         expect(f('X', 99999.0, 'ohnoes', nil, 0.99999)).
-           to_raise "bad argument #5 to 'argcheck' (number has no integer representation)"
+           to_raise "bad argument #5 to 'argcheck' (float has no integer representation)"
 
   - context std._debug set to nil:
     - before: |
@@ -564,6 +562,8 @@ specify typecheck:
         expect(fn('bool', {0})).to_raise 'boolean expected, got table'
         expect(fn('boolean', {0})).to_raise 'boolean expected, got table'
         expect(fn('file', {0})).to_raise 'FILE* expected, got table'
+        expect(fn('number', '1')).to_raise 'number expected, got string'
+        expect(fn('number', '1.234')).to_raise 'number expected, got string'
         expect(fn('number', {0})).to_raise 'number expected, got table'
         expect(fn('string', {0})).to_raise 'string expected, got table'
         expect(fn('table', false)).to_raise 'table expected, got boolean'
@@ -575,14 +575,14 @@ specify typecheck:
         expect(fn('string', 's')).not_to_raise 'any error'
         expect(fn('table', {})).not_to_raise 'any error'
         expect(fn('table', Object)).not_to_raise 'any error'
-
   - context with int:
     - it diagnoses nil argument:
         expect(fn('int', nil)).to_raise 'integer expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('int', false)).to_raise 'integer expected, got boolean'
-        expect(fn('int', 1.234)).to_raise 'integer expected, got float'
-        expect(fn('int', 1234e-3)).to_raise 'integer expected, got float'
+        expect(fn('int', 1.234)).to_raise 'float has no integer representation'
+        expect(fn('int', 1234e-3)).to_raise 'float has no integer representation'
+        expect(fn('int', '1.234')).to_raise 'string has no integer representation'
     - it matches types:
         expect(fn('int', 1)).not_to_raise 'any error'
         expect(fn('int', 1.0)).not_to_raise 'any error'
@@ -593,8 +593,9 @@ specify typecheck:
         expect(fn('integer', nil)).to_raise 'integer expected, got nil'
     - it diagnoses mismatched types:
         expect(fn('integer', false)).to_raise 'integer expected, got boolean'
-        expect(fn('integer', 1.234)).to_raise 'integer expected, got float'
-        expect(fn('integer', 1234e-3)).to_raise 'integer expected, got float'
+        expect(fn('integer', 1.234)).to_raise 'float has no integer representation'
+        expect(fn('integer', 1234e-3)).to_raise 'float has no integer representation'
+        expect(fn('integer', '1.234')).to_raise 'string has no integer representation'
     - it matches types:
         expect(fn('integer', 1)).not_to_raise 'any error'
         expect(fn('integer', 1.0)).not_to_raise 'any error'

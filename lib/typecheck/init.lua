@@ -618,6 +618,11 @@ local function check(expected, argu, i, predicate)
 end
 
 
+local function _type(x)
+   return (getmetatable(x) or {})._type or io_type(x) or math_type(x) or type(x)
+end
+
+
 local types = setmetatable({
    -- Accept argu[i].
    accept = function() end,
@@ -634,15 +639,14 @@ local types = setmetatable({
       return check('callable', argu, i, callable)
    end,
 
-   -- Accept argu[i] if it is an integer valued number, or can be
-   -- converted to one by `tonumber`.
+   -- Accept argu[i] if it is an integer valued number
    integer = function(argu, i)
-      local value = tonumber(argu[i])
-      if type(value) ~= 'number' then
+      local value = argu[i]
+      if type(tonumber(value)) ~= 'number' then
          return fail('integer', argu, i)
       end
       if tointeger(value) == nil then
-         return nil, 'number has no integer representation'
+         return nil, _type(value) .. ' has no integer representation'
       end
    end,
 
@@ -733,11 +737,6 @@ local function orconcat(alternatives)
 end
 
 
-local function _type(x)
-   return (getmetatable(x) or {})._type or io_type(x) or math_type(x) or type(x)
-end
-
-
 local function extramsg_gsub(pattern, replace)
    return function(s)
       return (gsub(s, pattern, replace))
@@ -764,7 +763,7 @@ local function extramsg_mismatch(i, expectedtypes, argu, key)
    if type(i) ~= 'number' then
       -- Support the old (expectedtypes, actual, key) calling convention.
       expectedtypes, actual, key, argu = i, expectedtypes, argu, nil
-      actualtype = _type(actual) or type(actual)
+      actualtype = _type(actual)
    else
       -- Support the new (i, expectedtypes, argu) convention, which can
       -- diagnose missing arguments properly.
@@ -820,6 +819,12 @@ local function extramsg_mismatch(i, expectedtypes, argu, key)
       expectedstr = orconcat(t) .. ' expected'
       for _, fn in ipairs(EXTRAMSG_XFORMS) do
          expectedstr = fn(expectedstr)
+      end
+   end
+
+   if expectedstr == 'integer expected' and tonumber(actual) then
+      if tointeger(actual) == nil then
+         return actualtype .. ' has no integer representation'
       end
    end
 

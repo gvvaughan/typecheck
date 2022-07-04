@@ -61,9 +61,21 @@
        be valid arguments, make the typespec 'string|table' and call
        `tostring` on it in your function.
 
+  - Number-like string arguments are considered a mismatch for
+    previously compatible expected number types for the same reason.
+    As above, either call `tonumber` at the call-site, or make the
+    typespec 'number|string' and call `tonumber` inside your function.
+
   - `argcheck`, `argerror`, `argscheck` and `resulterror` no longer
     accept a table with a `__tostring` metamethod as a substitute for
     an actual string for those parameters that require a string.
+
+  - `extramsg_mismatch` provides more specific details when the
+    expected argument is 'int' or 'integer':
+
+    ```
+    bad argument #1 to 'getfenv' (float has no integer representation)
+    ```
 
 
 ## Noteworthy changes in release 2,1 (2020-04-24) [stable]
