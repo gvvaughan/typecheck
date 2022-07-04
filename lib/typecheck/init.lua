@@ -1231,6 +1231,10 @@ end)()
 local T = types
 
 return setmetatable({
+   --- Add this to any stack frame offsets when argchecks are in force.
+   -- @int ARGCHECK_FRAME
+   ARGCHECK_FRAME = ARGCHECK_FRAME,
+
    --- Check the type of an argument against expected types.
    -- Equivalent to luaL_argcheck in the Lua C API.
    --

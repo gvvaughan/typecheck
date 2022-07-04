@@ -4,6 +4,11 @@
 
 ### New Features
 
+  - `ARGCHECK_FRAME` is now exported for use when writing your own
+    functions that need to adjust any stack `level` argument they
+    support, rather than having to divine if from the internals of
+    `_debug.argcheck`.
+
   - Support importing into another project directly with:
 
     ```sh
