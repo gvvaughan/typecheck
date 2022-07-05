@@ -745,6 +745,7 @@ end
 
 
 local EXTRAMSG_XFORMS = {
+   extramsg_gsub('any value or nil', 'argument'),
    extramsg_gsub('#table', 'non-empty table'),
    extramsg_gsub('#list', 'non-empty list'),
    extramsg_gsub('functor', 'functable'),
@@ -1066,7 +1067,7 @@ local argscheck = (function()
          local n = #typelist
          for i = 1, n do   -- normal parameters
             local ok = pcall(argcheck, 'pcall', i, typelist[i], valuelist[i])
-            if not ok then
+            if not ok or i > valuelist.n then
                return i
             end
          end
@@ -1181,7 +1182,7 @@ local argscheck = (function()
                bad = 'result',
                badtype = function(i, extramsg, level)
                   level = level or 1
-                  resulterror(fname, i, extramsg, level + 1)
+                  resulterror(fname, i, gsub(extramsg, 'argument( expected,)', 'result%1'), level + 1)
                end,
                permutations = permutations,
             }

@@ -18,6 +18,11 @@
     bad argument #1 to 'getfenv' (integer expected, got float)
     ```
 
+  - Instead of diagnosing an argument mismatch against `?any` as
+    'expected any value or nil, got no value', we now get
+    'expected argument, got no value'.  Similarly, for missing
+    results for `?any' we now get 'expected result, go no value'.
+
   - Support importing into another project directly with:
 
     ```sh
@@ -34,8 +39,10 @@
     similar are specified, consistently use 'table of integers',
     'list of functions', 'table of booleans', etc.
 
-  - Correctly diagnose unexpected `nil` arguments with 'got nil',
-    and missing arguments with 'got no value'.
+  - `argscheck` now correctly diagnoses unexpected `nil` arguments
+    with 'got nil', and missing arguments with 'got no value'.
+    Likewise for result errors about unexpected `nil` results and
+    missing return values.
 
   - Diagnose passing of incompatible objects with a `__tostring`
     metamethod to parameters that require a string instead of silently

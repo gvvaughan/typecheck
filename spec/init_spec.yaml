@@ -936,6 +936,43 @@ specify typecheck:
     - it accepts correct argument types:
         expect(wrapped()).to_be 'MAGIC'
 
+  - context with primitives:
+    - before:
+        wrapped = function(typespec)
+           return f('inner(' .. typespec .. ')', mkmagic)
+        end
+    - it diagnoses missing argument:
+        expect(wrapped('bool')()).to_raise 'boolean expected, got no value'
+        expect(wrapped('boolean')()).to_raise 'boolean expected, got no value'
+        expect(wrapped('file')()).to_raise 'FILE* expected, got no value'
+        expect(wrapped('number')()).to_raise 'number expected, got no value'
+        expect(wrapped('string')()).to_raise 'string expected, got no value'
+        expect(wrapped('table')()).to_raise 'table expected, got no value'
+    - it diagnoses nil argument:
+        expect(wrapped('bool')(nil)).to_raise 'boolean expected, got nil'
+        expect(wrapped('boolean')(nil)).to_raise 'boolean expected, got nil'
+        expect(wrapped('file')(nil)).to_raise 'FILE* expected, got nil'
+        expect(wrapped('number')(nil)).to_raise 'number expected, got nil'
+        expect(wrapped('string')(nil)).to_raise 'string expected, got nil'
+        expect(wrapped('table')(nil)).to_raise 'table expected, got nil'
+    - it diagnoses mismatched types:
+        expect(wrapped('bool')({0})).to_raise 'boolean expected, got table'
+        expect(wrapped('boolean')({0})).to_raise 'boolean expected, got table'
+        expect(wrapped('file')({0})).to_raise 'FILE* expected, got table'
+        expect(wrapped('number')('1')).to_raise 'number expected, got string'
+        expect(wrapped('number')('1.234')).to_raise 'number expected, got string'
+        expect(wrapped('number')({0})).to_raise 'number expected, got table'
+        expect(wrapped('string')({0})).to_raise 'string expected, got table'
+        expect(wrapped('table')(false)).to_raise 'table expected, got boolean'
+    - it matches types:
+        expect(wrapped('bool')(true)).not_to_raise 'any error'
+        expect(wrapped('boolean')(true)).not_to_raise 'any error'
+        expect(wrapped('file')(io.stderr)).not_to_raise 'any error'
+        expect(wrapped('number')(1)).not_to_raise 'any error'
+        expect(wrapped('string')('s')).not_to_raise 'any error'
+        expect(wrapped('table')({})).not_to_raise 'any error'
+        expect(wrapped('table')(Object)).not_to_raise 'any error'
+
   - context when checking single argument function:
     - before:
         wrapped = f('inner(#table)', mkmagic)
@@ -971,7 +1008,7 @@ specify typecheck:
     - before:
         wrapped = f('inner(?int, string)', mkmagic)
     - it diagnoses missing arguments:
-        expect(wrapped()).to_raise(badarg(2, 'string', 'no value'))
+        expect(wrapped()).to_raise(badarg(1, 'integer or nil', 'no value'))
         expect(wrapped(1)).to_raise(badarg(2, 'string', 'no value'))
     - it diagnoses nil arguments:
         expect(wrapped(nil)).not_to_raise(badarg(2, 'string', 'nil'))
@@ -1007,6 +1044,9 @@ specify typecheck:
   - context when checking final optional multi-argument function:
     - before:
         wrapped = f('inner(?any, ?string, [any])', mkmagic)
+      it diagnoses missing arguments:
+        expect(wrapped()).to_raise(badarg(1, 'argument', 'no value'))
+        expect(wrapped(1)).to_raise(badarg(2, 'nil or string', 'no value'))
     - it diagnoses wrong argument types:
         expect(wrapped(1, false)).to_raise(badarg(2, 'string or nil', 'boolean'))
         expect(wrapped(nil, false)).to_raise(badarg(2, 'string or nil', 'boolean'))
@@ -1016,8 +1056,6 @@ specify typecheck:
         expect(wrapped(1, nil, 3, false)).to_raise(badarg(4))
         expect(wrapped(nil, nil, 3, false)).to_raise(badarg(4))
     - it accepts correct argument types:
-        expect(wrapped()).to_be 'MAGIC'
-        expect(wrapped(1)).to_be 'MAGIC'
         expect(wrapped(nil, 'two')).to_be 'MAGIC'
         expect(wrapped(1, 'two')).to_be 'MAGIC'
         expect(wrapped(nil, nil, 3)).to_be 'MAGIC'
@@ -1119,7 +1157,7 @@ specify typecheck:
 
   - context when checking single return value function:
     - before: |
-        wrapped = f('inner(?any...) => #table', id)
+        wrapped = f('inner([any...]) => #table', id)
     - it diagnoses missing results:
         expect(wrapped()).to_raise(badresult(1, 'non-empty table'))
     - it diagnoses wrong result types:
@@ -1132,7 +1170,7 @@ specify typecheck:
 
   - context with variant single return value function:
     - before:
-        wrapped = f('inner(?any...) => int or nil', id)
+        wrapped = f('inner([any...]) => [?int]', id)
     - it diagnoses wrong result types:
         expect(wrapped(false)).to_raise(badresult(1, 'integer or nil', 'boolean'))
     - it diagnoses too many results:
@@ -1143,7 +1181,7 @@ specify typecheck:
 
   - context when checking multi-return value function:
     - before:
-        wrapped = f('inner(?any...) => int, string', id)
+        wrapped = f('inner([any...]) => int, string', id)
     - it diagnoses missing results:
         expect(wrapped()).to_raise(badresult(1, 'integer'))
         expect(wrapped(1)).to_raise(badresult(2, 'string'))
@@ -1171,7 +1209,7 @@ specify typecheck:
 
   - context when checking variant multi-return value function:
     - before:
-        wrapped = f('inner(?any...) => int, string or string', id)
+        wrapped = f('inner([any...]) => int, string or string', id)
     - it diagnoses missing results:
         expect(wrapped()).to_raise(badresult(1, 'integer or string'))
         expect(wrapped(1)).to_raise(badresult(2, 'string'))
@@ -1185,9 +1223,9 @@ specify typecheck:
 
   - context when checking variant nil,errmsg pattern function:
     - before:
-        wrapped = f('inner(?any...) => int, string or nil, string', id)
+        wrapped = f('inner([?any...]) => int, string or nil, string', id)
     - it diagnoses missing results:
-        expect(wrapped()).to_raise(badresult(2, 'string'))
+        expect(wrapped(nil)).to_raise(badresult(2, 'string'))
         expect(wrapped(1)).to_raise(badresult(2, 'string'))
     - it diagnoses wrong result types:
         expect(wrapped(false)).to_raise(badresult(1, 'integer or nil', 'boolean'))
@@ -1201,7 +1239,7 @@ specify typecheck:
 
   - context when checking optional multi-return value function:
     - before:
-        wrapped = f('inner(?any...) => [int], string', id)
+        wrapped = f('inner([any...]) => [int], string', id)
     - it diagnoses missing results:
         expect(wrapped()).to_raise(badresult(1, 'integer or string'))
         expect(wrapped(1)).to_raise(badresult(2, 'string'))
@@ -1215,7 +1253,11 @@ specify typecheck:
 
   - context when checking final optional multi-return value function:
     - before:
-        wrapped = f('inner(?any...) => ?any, ?string, [any]', id)
+        wrapped = f('inner([?any...]) => ?any, ?string, [any]', id)
+    - it diagnoses missing results:
+        expect({wrapped()}).to_raise(badresult(1, 'result', 'no value'))
+        expect({wrapped(nil)}).to_raise(badresult(2, 'string or nil', 'no value'))
+        expect({wrapped(1)}).to_raise(badresult(2, 'string or nil', 'no value'))
     - it diagnoses wrong result types:
         expect(wrapped(1, false)).to_raise(badresult(2, 'string or nil', 'boolean'))
         expect(wrapped(nil, false)).to_raise(badresult(2, 'string or nil', 'boolean'))
@@ -1225,8 +1267,6 @@ specify typecheck:
         expect(wrapped(1, nil, 3, false)).to_raise(badresult(4))
         expect(wrapped(nil, nil, 3, false)).to_raise(badresult(4))
     - it accepts correct result types:
-        expect({wrapped()}).to_equal {}
-        expect({wrapped(1)}).to_equal {1}
         expect({wrapped(nil, 'two')}).to_equal {[2]='two'}
         expect({wrapped(1, 'two')}).to_equal {1, 'two'}
         expect({wrapped(nil, nil, 3)}).to_equal {[3]=3}
@@ -1237,7 +1277,7 @@ specify typecheck:
   - context when checking optional final result:
     - context with single result:
       - before:
-          wrapped = f('inner(?any...) => [int]', id)
+          wrapped = f('inner([any...]) => [int]', id)
       - it diagnoses wrong result types:
           expect(wrapped(false)).to_raise(badresult(1, 'integer', 'boolean'))
       - it diagnoses too many results:
@@ -1247,7 +1287,7 @@ specify typecheck:
           expect({wrapped(1)}).to_equal {1}
     - context with trailing ellipsis:
       - before:
-          wrapped = f('inner(?any...) => string, [int]...', id)
+          wrapped = f('inner([any...]) => string, [int]...', id)
       - it diagnoses missing results:
           expect(wrapped()).to_raise(badresult(1, 'string'))
       - it diagnoses wrong result types:
@@ -1263,7 +1303,7 @@ specify typecheck:
           expect({wrapped('foo', 1, 2, 5)}).to_equal {'foo', 1, 2, 5}
     - context with inner ellipsis:
       - before:
-          wrapped = f('inner(?any...) => string, [int...]', id)
+          wrapped = f('inner([any...]) => string, [int...]', id)
       - it diagnoses missing results:
           expect(wrapped()).to_raise(badresult(1, 'string'))
       - it diagnoses wrong result types:
@@ -1280,7 +1320,7 @@ specify typecheck:
 
   - context with too many results:
     - before:
-        wrapped = f('inner(?any...) => [string], int', id)
+        wrapped = f('inner([any...]) => [string], int', id)
     - it diagnoses missing results:
         expect(wrapped()).to_raise(badresult(1, 'string or integer'))
         expect(wrapped 'one').to_raise(badresult(2, 'integer'))
