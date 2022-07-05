@@ -29,6 +29,10 @@
     $ cp ../typecheck/lib/typecheck/init.lua lib/typecheck.lua
     ```
 
+  - Multi-typed specifications are sorted asciibetically in error
+    messages by `argerror` and `resulterror` to make writing tests
+    for typechecked functions easier.
+
 ### Bug fixes
 
   - No matter whether 'int' or 'integer' is specified, always use

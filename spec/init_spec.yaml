@@ -813,16 +813,16 @@ specify typecheck:
         expect(fn('string|table', nil)).
            to_raise 'string or table expected, got nil'
         expect(fn('string|list|#table', nil)).
-           to_raise 'string, list or non-empty table expected, got nil'
+           to_raise 'list, non-empty table or string expected, got nil'
         expect(fn('string|number|list|object', nil)).
-           to_raise 'string, number, list or object expected, got nil'
+           to_raise 'list, number, object or string expected, got nil'
     - it diagnoses mismatched elements:
         expect(fn('string|table', false)).
            to_raise 'string or table expected, got boolean'
         expect(fn('string|#table', {})).
-           to_raise 'string or non-empty table expected, got empty table'
+           to_raise 'non-empty table or string expected, got empty table'
         expect(fn('string|number|#list|object', {})).
-           to_raise 'string, number, non-empty list or object expected, got empty table'
+           to_raise 'non-empty list, number, object or string expected, got empty table'
     - it matches any type from a list:
         expect(fn('string|table', 'foo')).not_to_raise 'any error'
         expect(fn('string|table', {})).not_to_raise 'any error'
@@ -834,7 +834,7 @@ specify typecheck:
         expect(fn('?boolean', 'string')).
            to_raise 'boolean or nil expected, got string'
         expect(fn('?boolean|:symbol', {})).
-           to_raise 'boolean, :symbol or nil expected, got empty table'
+        to_raise ':symbol, boolean or nil expected, got empty table'
     - it matches nil against a single type:
         expect(fn('?any', nil)).not_to_raise 'any error'
         expect(fn('?boolean', nil)).not_to_raise 'any error'
@@ -1048,8 +1048,8 @@ specify typecheck:
         expect(wrapped()).to_raise(badarg(1, 'argument', 'no value'))
         expect(wrapped(1)).to_raise(badarg(2, 'nil or string', 'no value'))
     - it diagnoses wrong argument types:
-        expect(wrapped(1, false)).to_raise(badarg(2, 'string or nil', 'boolean'))
-        expect(wrapped(nil, false)).to_raise(badarg(2, 'string or nil', 'boolean'))
+        expect(wrapped(1, false)).to_raise(badarg(2, 'nil or string', 'boolean'))
+        expect(wrapped(nil, false)).to_raise(badarg(2, 'nil or string', 'boolean'))
     - it diagnoses too many arguments:
         expect(wrapped(1, 'two', 3, false)).to_raise(badarg(4))
         expect(wrapped(nil, 'two', 3, false)).to_raise(badarg(4))
@@ -1143,10 +1143,10 @@ specify typecheck:
     - before:
         wrapped = f('inner([string], int)', mkmagic)
     - it diagnoses missing arguments:
-        expect(wrapped()).to_raise(badarg(1, 'string or integer'))
+        expect(wrapped()).to_raise(badarg(1, 'integer or string'))
         expect(wrapped('one')).to_raise(badarg(2, 'integer'))
     - it diagnoses wrong argument types:
-        expect(wrapped(false)).to_raise(badarg(1, 'string or integer', 'boolean'))
+        expect(wrapped(false)).to_raise(badarg(1, 'integer or string', 'boolean'))
         expect(wrapped('one', false)).to_raise(badarg(2, 'integer', 'boolean'))
     - it diagnoses too many arguments:
         expect(wrapped('one', 2, false)).to_raise(badarg(3))
@@ -1256,11 +1256,11 @@ specify typecheck:
         wrapped = f('inner([?any...]) => ?any, ?string, [any]', id)
     - it diagnoses missing results:
         expect({wrapped()}).to_raise(badresult(1, 'result', 'no value'))
-        expect({wrapped(nil)}).to_raise(badresult(2, 'string or nil', 'no value'))
-        expect({wrapped(1)}).to_raise(badresult(2, 'string or nil', 'no value'))
+        expect({wrapped(nil)}).to_raise(badresult(2, 'nil or string', 'no value'))
+        expect({wrapped(1)}).to_raise(badresult(2, 'nil or string', 'no value'))
     - it diagnoses wrong result types:
-        expect(wrapped(1, false)).to_raise(badresult(2, 'string or nil', 'boolean'))
-        expect(wrapped(nil, false)).to_raise(badresult(2, 'string or nil', 'boolean'))
+        expect(wrapped(1, false)).to_raise(badresult(2, 'nil or string', 'boolean'))
+        expect(wrapped(nil, false)).to_raise(badresult(2, 'nil or string', 'boolean'))
     - it diagnoses too many results:
         expect(wrapped(1, 'two', 3, false)).to_raise(badresult(4))
         expect(wrapped(nil, 'two', 3, false)).to_raise(badresult(4))
@@ -1322,11 +1322,11 @@ specify typecheck:
     - before:
         wrapped = f('inner([any...]) => [string], int', id)
     - it diagnoses missing results:
-        expect(wrapped()).to_raise(badresult(1, 'string or integer'))
+        expect(wrapped()).to_raise(badresult(1, 'integer or string'))
         expect(wrapped 'one').to_raise(badresult(2, 'integer'))
     - it diagnoses wrong result types:
         expect(wrapped(false)).
-           to_raise(badresult(1, 'string or integer', 'boolean'))
+           to_raise(badresult(1, 'integer or string', 'boolean'))
         expect(wrapped('one', false)).
            to_raise(badresult(2, 'integer', 'boolean'))
     - it diagnoses too many results:

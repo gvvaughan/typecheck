@@ -722,6 +722,22 @@ end
 --[[ =============================== ]]--
 
 
+local function xform_gsub(pattern, replace)
+   return function(s)
+      return (gsub(s, pattern, replace))
+   end
+end
+
+
+local ORCONCAT_XFORMS = {
+   xform_gsub('#table', 'non-empty table'),
+   xform_gsub('#list', 'non-empty list'),
+   xform_gsub('functor', 'functable'),
+   xform_gsub('list of', '\t%0'), -- tab sorts before any other printable
+   xform_gsub('table of', '\t%0'),
+}
+
+
 --- Concatenate a table of strings using ', ' and ' or ' delimiters.
 -- @tparam table alternatives a table of strings
 -- @treturn string string of elements from alternatives delimited by ', '
@@ -729,6 +745,12 @@ end
 local function orconcat(alternatives)
    if len(alternatives) > 1 then
       local t = copy(alternatives)
+      sort(t, function(a, b)
+         for _, fn in ipairs(ORCONCAT_XFORMS) do
+            a, b = fn(a), fn(b)
+         end
+         return a < b
+      end)
       local top = remove(t)
       t[#t] = t[#t] .. ' or ' .. top
       alternatives = t
@@ -737,24 +759,17 @@ local function orconcat(alternatives)
 end
 
 
-local function extramsg_gsub(pattern, replace)
-   return function(s)
-      return (gsub(s, pattern, replace))
-   end
-end
-
-
 local EXTRAMSG_XFORMS = {
-   extramsg_gsub('any value or nil', 'argument'),
-   extramsg_gsub('#table', 'non-empty table'),
-   extramsg_gsub('#list', 'non-empty list'),
-   extramsg_gsub('functor', 'functable'),
-   extramsg_gsub('(%S+ of) bool([,%s])', '%1 boolean%2'),
-   extramsg_gsub('(%S+ of) func([,%s])', '%1 function%2'),
-   extramsg_gsub('(%S+ of) int([,%s])', '%1 integer%2'),
-   extramsg_gsub('(%S+ of [^,%s]-)s?([,%s])', '%1s%2'),
-   extramsg_gsub('(s, [^,%s]-)s?([,%s])', '%1s%2'),
-   extramsg_gsub('(of .-)s? or ([^,%s]-)s? ', '%1s or %2s '),
+   xform_gsub('any value or nil', 'argument'),
+   xform_gsub('#table', 'non-empty table'),
+   xform_gsub('#list', 'non-empty list'),
+   xform_gsub('functor', 'functable'),
+   xform_gsub('(%S+ of) bool([,%s])', '%1 boolean%2'),
+   xform_gsub('(%S+ of) func([,%s])', '%1 function%2'),
+   xform_gsub('(%S+ of) int([,%s])', '%1 integer%2'),
+   xform_gsub('(%S+ of [^,%s]-)s?([,%s])', '%1s%2'),
+   xform_gsub('(s, [^,%s]-)s?([,%s])', '%1s%2'),
+   xform_gsub('(of .-)s? or ([^,%s]-)s? ', '%1s or %2s '),
 }
 
 
