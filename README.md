@@ -1,7 +1,7 @@
 Gradual type checking for Lua functions
 =======================================
 
-Copyright (C) 2014-2022 [Gary V. Vaughan][github]
+Copyright (C) 2014-2023 [Gary V. Vaughan][github]
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
 [![workflow status](https://github.com/gvvaughan/typecheck/actions/workflows/spec.yml/badge.svg?branch=master)](https://github.com/gvvaughan/typecheck/actions)

@@ -1,5 +1,5 @@
 # Gradual Function Type Checking for Lua 5.1, 5.2, 5.3 & 5.4
-# Copyright (C) 2014-2022 Gary V. Vaughan
+# Copyright (C) 2014-2023 Gary V. Vaughan
 
 before:
   this_module = 'typecheck'
