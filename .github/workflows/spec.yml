@@ -19,28 +19,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: leafo/gh-actions-lua@v8.0.0
+      - uses: leafo/gh-actions-lua@v10
         with:
           luaVersion: ${{ matrix.lua-version }}
 
-      - uses: leafo/gh-actions-luarocks@v4.0.0
+      - uses: leafo/gh-actions-luarocks@v4
+        with:
+          luaRocksVersion: 3.9.2
 
       - name: install
         run: |
           sudo apt-get install -y libyaml-dev
-          luarocks install ansicolors
-          luarocks install ldoc
-          luarocks install luacov
-          luarocks install specl
-          test -n "${{ matrix.strict }}" && luarocks install std._debug || true
           test -n "${{ matrix.strict }}" && luarocks install std.strict || true
 
       - name: build
         run: |
+          luarocks install ldoc
           make all doc
           luarocks make
 
       - name: test
         run: |
+          luarocks test --prepare
           make check SPECL_OPTS='-vfreport --coverage'
           bash <(curl -s https://codecov.io/bash) -f luacov.report.out

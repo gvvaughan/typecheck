@@ -33,3 +33,6 @@ CHECK_ENV = LUA=$(LUA)
 
 check: $(SOURCES)
 	LUA=$(LUA) $(SPECL) $(SPECL_OPTS) spec/*_spec.yaml
+
+
+.FORCE:
