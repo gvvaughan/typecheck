@@ -1,6 +1,6 @@
 --[[
- Gradual Function Type Checking for Lua 5.1, 5.2, 5.3 & 5.4
- Copyright (C) 2014-2023 Gary V. Vaughan
+ Gradual Function Type Checking for Lua 5.1, 5.2, 5.3, 5.4 & 5.5
+ Copyright (C) 2014-2026 Gary V. Vaughan
 ]]
 
 local inprocess = require 'specl.inprocess'

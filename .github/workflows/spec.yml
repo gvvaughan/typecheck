@@ -11,35 +11,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lua-version: ["5.4", "5.3", "5.2", "5.1", "luajit"]
+        lua-version: ["5.5", "5.4", "5.3", "5.2", "5.1", "luajit"]
         strict: ["std.strict", ""]
 
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
 
-      - uses: leafo/gh-actions-lua@v10
+      - uses: leafo/gh-actions-lua@v13
         with:
           luaVersion: ${{ matrix.lua-version }}
 
-      - uses: leafo/gh-actions-luarocks@v4
-        with:
-          luaRocksVersion: 3.9.2
+      - uses: leafo/gh-actions-luarocks@v6
 
       - name: install
         run: |
+          sudo apt-get update -q -q --yes
           sudo apt-get install -y libyaml-dev
+          luarocks install ansicolors
+          luarocks install --server=https://luarocks.org/manifests/gvvaughan ldoc
+          luarocks install luacov
+          luarocks install specl
           test -n "${{ matrix.strict }}" && luarocks install std.strict || true
 
       - name: build
         run: |
-          luarocks install ldoc
           make all doc
           luarocks make
 
       - name: test
         run: |
-          luarocks test --prepare
           make check SPECL_OPTS='-vfreport --coverage'
           bash <(curl -s https://codecov.io/bash) -f luacov.report.out

@@ -1,7 +1,7 @@
 Gradual type checking for Lua functions
 =======================================
 
-Copyright (C) 2014-2023 [Gary V. Vaughan][github]
+Copyright (C) 2014-2026 [Gary V. Vaughan][github]
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
 [![workflow status](https://github.com/gvvaughan/typecheck/actions/workflows/spec.yml/badge.svg?branch=master)](https://github.com/gvvaughan/typecheck/actions)
@@ -23,7 +23,7 @@ core Lua C-language `argcheck ()` API.
   against the specification, and raise an error if some don't match
 
 This is a light-weight library for [Lua][] 5.1 (including [LuaJIT][]),
-5.2, 5.3 and 5.4 written in pure Lua.
+5.2, 5.3, 5.4 and 5.5 written in pure Lua.
 
 [github]: http://github.com/gvvaughan/typecheck/ "Github repository"
 [lua]: http://www.lua.org "The Lua Project"
