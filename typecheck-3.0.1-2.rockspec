@@ -1,4 +1,4 @@
-local _MODREV, _SPECREV = '3.0.1', '-1'
+local _MODREV, _SPECREV = '3.0.1', '-2'
 
 package = 'typecheck'
 version = _MODREV .. _SPECREV
@@ -26,10 +26,6 @@ source = {
 dependencies = {
    'lua >= 5.1, < 5.6',
    'std._debug >= 1.0.1',
-}
-
-build_dependencies = {
-   'ldoc',
 }
 
 build = {
