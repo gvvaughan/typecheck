@@ -2,6 +2,9 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+
+## Noteworthy changes in release 3.1 (2026-10-11) [stable]
+
 ### New features
 
   - `std._debug` is no longer a hard dependency.  Without it, runtime
