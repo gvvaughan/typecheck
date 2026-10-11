@@ -25,7 +25,6 @@ source = {
 
 dependencies = {
    'lua >= 5.1, < 5.6',
-   'std._debug >= 1.0.1',
 }
 
 build_dependencies = {

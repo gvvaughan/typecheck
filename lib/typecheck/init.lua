@@ -6,8 +6,9 @@
  Gradual type checking for Lua functions.
 
  The behaviour of the functions in this module are controlled by the value
- of the `argcheck` field maintained by the `std._debug` module.  Not setting
- a value prior to loading this module is equivalent to having `argcheck = true`.
+ of the `argcheck` field maintained by the optional `std._debug` module.  Not
+ setting a value prior to loading this module, or not installing `std._debug`
+ at all, is equivalent to having `argcheck = true`.
 
  The first line of Lua code in production quality applications that value
  execution speed over rigorous function type checking should be:
@@ -35,18 +36,14 @@
 local _debug = (function()
    local ok, r = pcall(require, 'std._debug')
    if not ok then
-      r = setmetatable({
+      r = {
          -- If this module was required, but there's no std._debug, safe to
          -- assume we do want runtime argchecks!
          argcheck = true,
-         -- Similarly, if std.strict is available, but there's no _std.debug,
-         -- then apply strict global symbol checks to this module!
-         strict = true,
-      }, {
-         __call = function(self, x)
-            self.argscheck = (x ~= false)
-         end,
-      })
+         -- But only apply strict global symbol checks when they were
+         -- requested by an installed std._debug.
+         strict = false,
+      }
    end
 
    return r

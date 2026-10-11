@@ -2,6 +2,19 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### New features
+
+  - `std._debug` is no longer a hard dependency.  Without it, runtime
+    type checks are always enabled; install it to control them with
+    `argcheck` hints as before.
+
+### Incompatible changes
+
+  - Strict global symbol checks for typecheck's own module environment
+    now need both `std._debug` and `std.strict` installed, matching
+    luaposix.  Previously `std.strict` alone was enough when `std._debug`
+    was missing.
+
 ### Bug fixes
 
   - `argscheck` no longer overwrites the environment of the wrapped

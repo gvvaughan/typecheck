@@ -17,6 +17,11 @@ package.path = std.package.normalize('./lib/?.lua', './lib/?/init.lua', package.
 local LUA = os.getenv 'LUA' or 'lua'
 
 
+-- Examples that need optional modules are skipped when not installed.
+have_debug = pcall(require, 'std._debug')
+have_strict = pcall(require, 'std.strict.init')
+
+
 function nop() end
 
 

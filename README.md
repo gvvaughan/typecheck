@@ -94,6 +94,20 @@ code, either by calling `require 'std._debug' (false)` prior to loading
 `typecheck` or, more precisely, by setting
 `require 'std._debug'.argcheck = false`
 
+Those hints need the optional [std._debug][] module, so install that too
+if you want to control type checking:
+
+```bash
+    luarocks install std._debug
+```
+
+When both [std._debug][] and [std.strict][] are installed, typecheck also
+applies strict global symbol checks to its own module environment, unless
+`require 'std._debug'.strict = false` is set before loading `typecheck`.
+
+[std._debug]: https://github.com/lua-stdlib/_debug "Debug Hints Library"
+[std.strict]: https://github.com/lua-stdlib/strict "Strict Variable Declarations"
+
 
 
 Documentation
