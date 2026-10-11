@@ -279,11 +279,13 @@ end
 -- @usage
 --    callers_environment = getfenv(1)
 local getfenv = (function(f)
-   local debug_getfenv = debug.getfenv
+   -- In Lua 5.1, only debug.getfenv works on C functions; but compatibility
+   -- layers (like specl) may supply only the best version as `getfenv`.
+   local debug_getfenv = debug.getfenv or f
    local debug_getinfo = debug.getinfo
    local debug_getupvalue = debug.getupvalue
 
-   if debug_getfenv then
+   if _VERSION == 'Lua 5.1' then
 
       return function(fn)
          local n = tointeger(fn or 1)
@@ -352,11 +354,12 @@ end)(rawget(_G, 'getfenv'))
 local setfenv = (function(f)
    local debug_getinfo = debug.getinfo
    local debug_getupvalue = debug.getupvalue
-   local debug_setfenv = debug.setfenv
+   -- See getfenv above.
+   local debug_setfenv = debug.setfenv or f
    local debug_setupvalue = debug.setupvalue
    local debug_upvaluejoin = debug.upvaluejoin
 
-   if debug_setfenv then
+   if _VERSION == 'Lua 5.1' then
 
       return function(fn, env)
          local n = tointeger(fn or 1)
@@ -1206,7 +1209,7 @@ local argscheck = (function()
             -- Capture this module's environment outside the wrapper,
             -- because the wrapper's own `_ENV` is what `setfenv` replaces.
             local module_env = _ENV
-            local have_fenv = rawget(_G, 'getfenv') ~= nil
+            local have_fenv = _VERSION == 'Lua 5.1'
             local inner_env = getfenv(my_inner)
             local current_env = inner_env
 
