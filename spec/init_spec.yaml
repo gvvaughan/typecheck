@@ -1032,11 +1032,15 @@ specify typecheck:
               return i, select(2, debug.getupvalue(fn, i))
            end
            -- Don't use load(), because Specl sandboxes wrap the result.
-           local inner, setfenv
-           if debug.setfenv then
-              setfenv = debug.setfenv
+           -- Check _VERSION, because Specl sandboxes omit debug.setfenv,
+           -- and supply setfenv on all Lua versions.
+           local inner, getfenv, setfenv = nil, getfenv, setfenv
+           if _VERSION == 'Lua 5.1' then
               inner = setfenv(function() return who end, {who='private'})
            else
+              getfenv = function(fn)
+                 return select(2, upvalue(fn, '_ENV'))
+              end
               setfenv = function(fn, env)
                  debug.upvaluejoin(fn, upvalue(fn, '_ENV'), function() return env end, 1)
               end
@@ -1044,7 +1048,7 @@ specify typecheck:
            end
            who = 'global'
            local wrapped = argscheck('inner()', inner)
-           local original = debug.getfenv and debug.getfenv(wrapped) or select(2, upvalue(wrapped, '_ENV'))
+           local original = getfenv(wrapped)
         ]]
     - it preserves the environment of the inner function:
         expect(luaproc(prelude .. [[
