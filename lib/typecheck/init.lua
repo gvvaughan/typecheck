@@ -1204,6 +1204,15 @@ local argscheck = (function()
          end
 
          local wrap_function = function(my_inner)
+            -- The inner function keeps its own environment, unless the
+            -- wrapper environment is changed with `setfenv`.
+            -- Capture this module's environment outside the wrapper,
+            -- because the wrapper's own `_ENV` is what `setfenv` replaces.
+            local module_env = _ENV
+            local have_fenv = rawget(_G, 'getfenv') ~= nil
+            local inner_env = getfenv(my_inner)
+            local current_env = inner_env
+
             return function(...)
                local argt = pack(...)
 
@@ -1216,11 +1225,20 @@ local argscheck = (function()
                -- Diagnose bad inputs.
                diagnose(argt, input)
 
-               -- Propagate outer environment to inner function.
-               if type(my_inner) == 'table' then
-                  setfenv((getmetatable(my_inner) or {}).__call, getfenv(1))
-               else
-                  setfenv(my_inner, getfenv(1))
+               -- Propagate a replaced wrapper environment to the inner
+               -- function, or restore the original if it was put back.
+               -- Lua 5.2+ `setfenv` replaces the `_ENV` upvalue referenced
+               -- here, but Lua 5.1 keeps function environments separately.
+               local env = _ENV
+               if have_fenv then
+                  env = getfenv(1)
+               end
+               if env == module_env then
+                  env = inner_env
+               end
+               if env ~= current_env then
+                  setfenv(my_inner, env)
+                  current_env = env
                end
 
                -- Execute.

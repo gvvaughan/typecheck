@@ -2,6 +2,14 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### Bug fixes
+
+  - `argscheck` no longer overwrites the environment of the wrapped
+    function with typecheck's own on every call, which broke functions
+    defined in a module with a private `_ENV`.  Calling `setfenv` on
+    the wrapper still propagates the new environment to the wrapped
+    function.
+
 
 ## Noteworthy changes in release 3.0.1 (2026-07-27) [stable]
 

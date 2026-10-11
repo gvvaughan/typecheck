@@ -912,6 +912,51 @@ specify typecheck:
       ]]
       expect(luaproc(script)).to_succeed()
 
+  - context with function environments:
+    - before: |
+        prelude = [[
+           local argscheck = require 'typecheck'.argscheck
+           local load, setfenv = load, setfenv
+           if setfenv then
+              load = function(s, n, m, env)
+                 return setfenv(loadstring(s, n), env)
+              end
+           else
+              setfenv = function(fn, env)
+                 local i = 1
+                 while assert(debug.getupvalue(fn, i), 'no _ENV upvalue') ~= '_ENV' do
+                    i = i + 1
+                 end
+                 debug.upvaluejoin(fn, i, function() return env end, 1)
+              end
+           end
+           who = 'global'
+           local inner = load('return who', 'inner', 't', {who='private'})
+           local wrapped = argscheck('inner()', inner)
+        ]]
+    - it preserves the environment of the inner function:
+        expect(luaproc(prelude .. [[
+           io.write(wrapped(), ' ', wrapped())
+        ]])).to_output 'private private'
+    - it propagates a replaced wrapper environment to the inner function:
+        expect(luaproc(prelude .. [[
+           setfenv(wrapped, setmetatable({who='sandbox'}, {__index=_G}))
+           io.write(wrapped())
+        ]])).to_output 'sandbox'
+    - it restores the inner function environment with the wrapper environment:
+        expect(luaproc(prelude .. [[
+           local i, original = 1, getfenv and getfenv(wrapped)
+           while not original do
+              local name, value = debug.getupvalue(wrapped, i)
+              if assert(name, 'no _ENV upvalue') == '_ENV' then original = value end
+              i = i + 1
+           end
+           setfenv(wrapped, setmetatable({who='sandbox'}, {__index=_G}))
+           wrapped()
+           setfenv(wrapped, original)
+           io.write(wrapped())
+        ]])).to_output 'private'
+
   - context used as an annotation:
     - before:
         wrapped = f 'mkmagic()' .. mkmagic
