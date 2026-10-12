@@ -25,11 +25,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: leafo/gh-actions-lua@v13
+      - uses: luarocks/gh-actions-lua@v14
         with:
           luaVersion: ${{ matrix.lua-version }}
 
-      - uses: leafo/gh-actions-luarocks@v6
+      - uses: luarocks/gh-actions-luarocks@v7
 
       - name: install
         run: |
@@ -65,7 +65,7 @@ jobs:
         run: |
           make check SPECL_OPTS='-vfreport --coverage'
 
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v7
         with:
           # Pull requests from forks get no OIDC token, but Codecov accepts
           # tokenless uploads from forks of public repositories.
