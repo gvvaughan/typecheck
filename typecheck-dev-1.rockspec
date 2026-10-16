@@ -1,4 +1,4 @@
-local _MODREV, _SPECREV = 'git', '-1'
+local _MODREV, _SPECREV = 'dev', '-1'
 
 package = 'typecheck'
 version = _MODREV .. _SPECREV
@@ -13,13 +13,13 @@ description = {
       be enabled or disabled for production code, with a Lua API modelled
       on the core Lua C language API.
    ]],
-   homepage = 'http://gvvaughan.github.io/typecheck',
+   homepage = 'https://gvvaughan.github.io/typecheck',
    issues_url = 'https://github.com/gvvaughan/typecheck/issues',
    license = 'MIT/X11',
 }
 
 source = {
-   url = 'http://github.com/gvvaughan/typecheck/archive/v' .. _MODREV .. '.zip',
+   url = 'https://github.com/gvvaughan/typecheck/archive/v' .. _MODREV .. '.zip',
    dir = 'typecheck-' .. _MODREV,
 }
 
@@ -50,8 +50,8 @@ test = {
    command = 'make check',
 }
 
-if _MODREV == 'git' then
+if _MODREV == 'dev' then
    source = {
-      url = 'git://github.com/gvvaughan/typecheck.git',
+      url = 'git+https://github.com/gvvaughan/typecheck.git',
    }
 end

@@ -7,7 +7,7 @@ MKDIR	= mkdir -p
 SED	= sed
 SPECL	= specl
 
-VERSION	= git
+VERSION	= dev
 
 luadir	= lib/typecheck
 SOURCES =				\
