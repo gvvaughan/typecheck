@@ -3,8 +3,8 @@
  Copyright (C) 2014-2026 Gary V. Vaughan
 ]]
 
-title = 'typecheck @PACKAGE_VERSION@ Reference'
-project = 'typecheck @PACKAGE_VERSION@'
+title = 'typecheck @version@ Reference'
+project = 'typecheck @version@'
 description = [[
 # Gradual Function Type Checking
 
