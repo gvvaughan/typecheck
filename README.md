@@ -3,9 +3,9 @@ Gradual type checking for Lua functions
 
 Copyright (C) 2014-2026 [Gary V. Vaughan][github]
 
-[![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
+[![License](https://img.shields.io/:license-mit-blue.svg)](https://mit-license.org)
 [![workflow status](https://github.com/gvvaughan/typecheck/actions/workflows/spec.yml/badge.svg?branch=master)](https://github.com/gvvaughan/typecheck/actions)
-[![codecov.io](https://codecov.io/gh/gvvaughan/typecheck/branch/master/graph/badge.svg)](https://codecov.io/gh/gvvaughan/typecheck)
+[![codecov.io](https://codecov.io/gh/gvvaughan/typecheck/graph/badge.svg?branch=master)](https://codecov.io/gh/gvvaughan/typecheck?branch=master)
 
 A Luaish run-time gradual type checking system, for argument and return
 types at function boundaries with simple annotations that can be disabled
@@ -25,9 +25,9 @@ core Lua C-language `argcheck ()` API.
 This is a light-weight library for [Lua][] 5.1 (including [LuaJIT][]),
 5.2, 5.3, 5.4 and 5.5 written in pure Lua.
 
-[github]: http://github.com/gvvaughan/typecheck/ "Github repository"
-[lua]: http://www.lua.org "The Lua Project"
-[luajit]: http://luajit.org "The LuaJIT Project"
+[github]: https://github.com/gvvaughan/typecheck/ "Github repository"
+[lua]: https://www.lua.org "The Lua Project"
+[luajit]: https://luajit.org "The LuaJIT Project"
 
 
 Installation
@@ -51,7 +51,7 @@ The best way to install without [LuaRocks][] is to copy the entire
 `lib/typecheck` directory into a subdirectory of your package search path,
 along with the modules listed as dependencies in the included rockspec.
 
-[luarocks]: http://www.luarocks.org "Lua package manager"
+[luarocks]: https://luarocks.org "Lua package manager"
 
 
 Use
@@ -116,7 +116,7 @@ Documentation
 The latest release is [documented with LDoc][github.io].
 Pre-built HTML files are included in the [release tarball][releases].
 
-[github.io]: http://gvvaughan.github.io/typecheck
+[github.io]: https://gvvaughan.github.io/typecheck
 [releases]: https://github.com/gvvaughan/typecheck/releases
 
 
@@ -152,4 +152,4 @@ points when proposing changes:
 5. Prefer explicit string function calls over object methods, to mitigate
    issues with monkey-patching in caller environment.
 
-[issues]: http://github.com/gvvaughan/typecheck/issues
+[issues]: https://github.com/gvvaughan/typecheck/issues
