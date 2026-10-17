@@ -2,6 +2,18 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### Incompatible changes
+
+  - Type mismatch messages name a number argument 'number' again, as
+    Lua itself does, rather than 'integer' or 'float', and a number or
+    numeric string with a fractional part fails an 'int' check with
+    'number has no integer representation', the message Lua uses for
+    the same failure.
+    The 'integer' and 'float' names that release 3.0 introduced
+    weren't available on Lua 5.1, 5.2 or LuaJIT, which store every
+    number as a C double, and so differed between Lua versions: `1.0`
+    was an 'integer' on Lua 5.1 but a 'float' on Lua 5.3 and newer.
+
 ### Bug fixes
 
   - `argscheck` now checks an optional final argument against its own
