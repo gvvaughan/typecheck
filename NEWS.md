@@ -2,6 +2,13 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### Bug fixes
+
+  - `argscheck` now checks an optional final argument against its own
+    type.  Previously `argscheck('f(string, [int])', fn)` accepted
+    `f('a', 'x')`, because the permutation without the optional
+    parameter matched the surplus 'x' against its last type, `string`.
+
 
 ## Noteworthy changes in release 3.1 (2026-10-11) [stable]
 

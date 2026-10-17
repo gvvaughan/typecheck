@@ -1086,11 +1086,15 @@ local argscheck = (function()
                return i
             end
          end
-         for i = n + 1, valuelist.n do -- additional values against final type
-            local ok = pcall(argcheck, 'pcall', i, typelist[n], valuelist[i])
-            if not ok then
-               return i
+         if typelist.dots then
+            for i = n + 1, valuelist.n do -- additional values against final type
+               local ok = pcall(argcheck, 'pcall', i, typelist[n], valuelist[i])
+               if not ok then
+                  return i
+               end
             end
+         elseif valuelist.n > n then
+            return n + 1 -- too many values for this permutation
          end
       end
 
