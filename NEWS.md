@@ -2,6 +2,23 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### New features
+
+  - A parameter in angle brackets is optional, but can't be skipped:
+    it may only be omitted along with every parameter after it, as
+    Lua's own optional arguments are.  So with
+
+    ```lua
+    find = argscheck('find(string, string, <?int>, <?boolean|:plain>)', find)
+    ```
+
+    `find('a', 'b')` and `find('a', 'b', 1, true)` are accepted, but
+    `find('a', 'b', false)` is diagnosed with 'integer or nil expected,
+    got boolean'.  A parameter in square brackets can still be skipped,
+    so `[?int], [?boolean|:plain]` accepts that `false` as the
+    `:plain` argument.  A required parameter can't follow an angle
+    bracketed one, and `argscheck` diagnoses a declaration with one.
+
 ### Incompatible changes
 
   - Type mismatch messages name a number argument 'number' again, as

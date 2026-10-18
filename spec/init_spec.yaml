@@ -1301,6 +1301,47 @@ specify typecheck:
           expect(wrapped('foo', 1, 2)).to_be 'MAGIC'
           expect(wrapped('foo', 1, 2, 5)).to_be 'MAGIC'
 
+  - context when checking positional optional parameters:
+    - context with a run of positional optionals:
+      - before:
+          wrapped = f('inner(string, <?int>, <?boolean|:plain>)', mkmagic)
+      - it diagnoses wrong argument types:
+          expect(wrapped('foo', false)).to_raise(badarg(2, 'integer or nil', 'boolean'))
+          expect(wrapped('foo', 'bar')).to_raise(badarg(2, 'integer or nil', 'string'))
+          expect(wrapped('foo', 1, 'bar')).to_raise(badarg(3, ':plain, boolean or nil', 'string'))
+      - it diagnoses too many arguments:
+          expect(wrapped('foo', 1, true, false)).to_raise(badarg(4))
+      - it accepts correct argument types:
+          expect(wrapped('foo')).to_be 'MAGIC'
+          expect(wrapped('foo', 1)).to_be 'MAGIC'
+          expect(wrapped('foo', nil, true)).to_be 'MAGIC'
+          expect(wrapped('foo', 1, ':plain')).to_be 'MAGIC'
+    - context with a skippable optional before a positional one:
+      - before:
+          wrapped = f('inner([table], <?int>, <?string>)', mkmagic)
+      - it diagnoses wrong argument types:
+          expect(wrapped({}, false)).to_raise(badarg(2, 'integer, nil or string', 'boolean'))
+      - it accepts correct argument types:
+          expect(wrapped()).to_be 'MAGIC'
+          expect(wrapped(1)).to_be 'MAGIC'
+          expect(wrapped(1, 'foo')).to_be 'MAGIC'
+          expect(wrapped({}, 1, 'foo')).to_be 'MAGIC'
+    - context with trailing ellipsis:
+      - before:
+          wrapped = f('inner(<?any>, <?string>, [any...])', mkmagic)
+      - it diagnoses wrong argument types:
+          expect(wrapped(1, false)).to_raise(badarg(2, 'nil or string', 'boolean'))
+      - it accepts correct argument types:
+          expect(wrapped()).to_be 'MAGIC'
+          expect(wrapped(1)).to_be 'MAGIC'
+          expect(wrapped(1, 'foo', false, {})).to_be 'MAGIC'
+    - context with a required parameter after a positional optional:
+      - it diagnoses the declaration: |
+          expect(f('inner(<int>, string)', mkmagic)).
+             to_raise "bad argument #1 to 'argscheck' ('string' must be optional after '<int>')"
+      - it accepts an optional parameter after a positional optional:
+          expect(f('inner(<int>, [string])', mkmagic)(1, 'foo')).to_be 'MAGIC'
+
   - context when omitting self type:
     - before:
         me = {

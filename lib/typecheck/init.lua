@@ -972,30 +972,47 @@ end
 
 
 --- Calculate permutations of type lists with and without [optionals].
+-- A positional <optional> can't be skipped, so the permutation without
+-- it is closed, and takes no more parameters.
 -- @tparam table t a list of expected types by argument position
--- @treturn table set of possible type lists
+-- @treturn[1] table set of possible type lists
+-- @return[2] nil
+-- @treturn[2] string error message for a malformed type list
 local function permute(t)
    if t[#t] then
       t[#t] = gsub(t[#t], '%]%.%.%.$', '...]')
    end
 
-   local p = {{}}
+   local p, positional = {{}}, nil
    for _, v in ipairs(t) do
       local optional = match(v, '%[(.+)%]')
+      local closed = false
+      if optional == nil then
+         optional = match(v, '^<(.+)>$')
+         closed = optional ~= nil
+      end
 
       if optional == nil then
+         -- A closed permutation can't omit a required parameter.
+         if positional then
+            return nil, format("'%s' must be optional after '%s'", v, positional)
+         end
+
          -- Append non-optional type-spec to each permutation.
          for b = 1, #p do
             insert(p[b], markdots(p[b], v))
          end
       else
-         -- Duplicate all existing permutations, and add optional type-spec
+         -- Duplicate all open permutations, and add optional type-spec
          -- to the unduplicated permutations.
-         local o = #p
-         for b = 1, o do
-            p[b + o] = copy(p[b])
-            insert(p[b], markdots(p[b], optional))
+         for b = 1, #p do
+            if not p[b].closed then
+               p[#p + 1] = copy(p[b])
+               p[#p].closed = closed
+               insert(p[b], markdots(p[b], optional))
+            end
          end
+         positional = positional or (closed and v or nil)
       end
    end
    return p
@@ -1023,7 +1040,11 @@ end
 
 
 local function parsetypes(typespec)
-   local r, permutations = {}, permute(typespec)
+   local permutations, err = permute(typespec)
+   if permutations == nil then
+      error(err, 2)
+   end
+   local r = {}
    for i = 1, #permutations[1] do
       r[i] = projectuniq(i, permutations)
    end
@@ -1153,6 +1174,11 @@ local argscheck = (function()
             fname = match(decl, '^%s*([%w_][%.%:%d%w_]*)')
          end
 
+         local permutations, err = permute(argtypes)
+         if permutations == nil then
+            argerror('argscheck', 1, err, 2)
+         end
+
          -- Precalculate vtables once to make multiple calls faster.
          local input = {
             bad = 'argument',
@@ -1160,7 +1186,7 @@ local argscheck = (function()
                level = level or 1
                argerror(fname, i, extramsg, level + 1)
             end,
-            permutations = permute(argtypes),
+            permutations = permutations,
          }
 
          -- Parse '... => returntype, returntype, returntype...'.
@@ -1169,7 +1195,11 @@ local argscheck = (function()
             local i, permutations = 0, {}
             for _, group in ipairs(split(returntypes, '%s+or%s+')) do
                returntypes = split(group, ',%s*')
-               for _, t in ipairs(permute(returntypes)) do
+               local group_permutations, err = permute(returntypes)
+               if group_permutations == nil then
+                  argerror('argscheck', 1, err, 2)
+               end
+               for _, t in ipairs(group_permutations) do
                   i = i + 1
                   permutations[i] = t
                end
@@ -1371,6 +1401,17 @@ return setmetatable({
    --
    --     insert = argscheck('table.insert(table, [int], ?any)', table.insert)
    --
+   -- An argument in square brackets can be skipped even when a later
+   -- argument is present, so a later argument may take its place.  When an
+   -- argument can only be omitted along with every argument after it, as
+   -- with Lua's own optional arguments, put its type specification in angle
+   -- brackets instead:
+   --
+   --     find = argscheck('string.find(string, string, <?int>, <?boolean>)',
+   --                      string.find)
+   --
+   -- Only optional parameters can follow an argument in angle brackets.
+   --
    -- Similarly return types can be checked with the same list syntax as
    -- arguments:
    --
@@ -1464,8 +1505,8 @@ return setmetatable({
    opt = opt,
 
    --- Compact permutation list into a list of valid types at each argument.
-   -- Eliminate bracketed types by combining all valid types at each position
-   -- for all permutations of *typelist*.
+   -- Eliminate bracketed types, in square or angle brackets, by combining
+   -- all valid types at each position for all permutations of *typelist*.
    -- @function parsetypes
    -- @tparam list types a normalized list of type names
    -- @treturn list valid types for each positional parameter
