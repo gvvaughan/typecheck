@@ -2,6 +2,9 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+
+## Noteworthy changes in release 4 (2026-10-20) [stable]
+
 ### New features
 
   - A parameter in angle brackets is optional, but can't be skipped:
