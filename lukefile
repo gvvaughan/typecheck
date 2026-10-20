@@ -15,19 +15,17 @@ modules  = {
    {['typecheck.version'] = 'lib/typecheck/version.lua.in'},
 }
 
--- `luke release version=X.Y` adds the release to NEWS.md, writes the
--- release rockspec, points the README badges at the release branch,
--- commits the LDocs, and publishes them to gh-pages.
 release  = {
-   news         = 'NEWS.md',
-   rockspec     = 'typecheck-dev-1.rockspec',
-   add          = {'doc/'},
-   replacements = {
-      {['README.md'] = {
+   news               = 'NEWS.md',
+   rockspec           = 'typecheck-dev-1.rockspec',
+   check_dependencies = true,
+   add                = {'doc/'},
+   replacements       = {
+      {['README.md']  = {
          {['?branch=master'] = '?branch=release-v@version@'},
       }},
    },
-   ['gh-pages'] = {
+   ['gh-pages']       = {
       {['.'] = 'doc/'},
    },
 }
