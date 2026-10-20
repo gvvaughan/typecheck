@@ -22,6 +22,12 @@ jobs:
       contents: read
       id-token: write
 
+    # Specl's own dependencies include std._debug, so typecheck's
+    # dependencies go into a tree of their own, the only one the examples
+    # search.
+    env:
+      DEPS: ${{ github.workspace }}/deps
+
     steps:
       - uses: actions/checkout@v7
 
@@ -41,12 +47,21 @@ jobs:
           luarocks install --server=https://luarocks.org/manifests/gvvaughan ldoc
           printf gvvaughan > "$(luarocks show --rock-dir ldoc)/rock_namespace"
           luarocks test --prepare
-          test -n "${{ matrix.debug }}" && luarocks install std._debug || true
-          test -n "${{ matrix.strict }}" && luarocks install std.strict || true
+          luarocks --tree="$DEPS" make --only-deps
+          test -n "${{ matrix.debug }}" && luarocks --tree="$DEPS" install std._debug || true
+          test -n "${{ matrix.strict }}" && luarocks --tree="$DEPS" install std.strict || true
 
       - name: build
         run: |
+          # Install into specl's tree, off the examples' search path, so
+          # they still test the typecheck in this tree.
           luarocks make --force
+
+      - name: paths
+        run: |
+          V=$(lua -e 'print((_VERSION:gsub("^Lua ", "")))')
+          echo "LUA_PATH=$DEPS/share/lua/$V/?.lua;$DEPS/share/lua/$V/?/init.lua" >> "$GITHUB_ENV"
+          echo "LUA_CPATH=$DEPS/lib/lua/$V/?.so" >> "$GITHUB_ENV"
 
       - name: check optional modules
         run: |
