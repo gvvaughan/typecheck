@@ -1,4 +1,4 @@
-local _MODREV, _SPECREV = 'dev', '-1'
+local _MODREV, _SPECREV = '4', '-1'
 
 package = 'typecheck'
 version = _MODREV .. _SPECREV

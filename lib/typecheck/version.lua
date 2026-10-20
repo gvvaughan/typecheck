@@ -1,0 +1,6 @@
+--[[
+ Gradual Function Type Checking for Lua 5.1, 5.2, 5.3, 5.4 & 5.5
+ Copyright (C) 2014-2026 Gary V. Vaughan
+]]
+
+return 'Gradual Function Typechecks / 4'
