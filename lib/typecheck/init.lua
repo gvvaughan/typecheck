@@ -118,7 +118,12 @@ local function callable(x)
    -- --> stack traceback:
    -- -->	stdin:1: in main chunk
    -- -->		[C]: in ?
-   if type(x) == 'function' or (getmetatable(x) or {}).__call then
+   if type(x) == 'function' then
+      return x
+   end
+   -- A protected metatable, from `__metatable`, need not be a table.
+   local mt = getmetatable(x)
+   if type(mt) == 'table' and mt.__call then
       return x
    end
 end
@@ -129,7 +134,10 @@ end
 -- @string n name of metamethod to look up
 -- @treturn function|nil metamethod function, if callable, otherwise `nil`
 local function getmetamethod(x, n)
-   return callable((getmetatable(x) or {})[n])
+   local mt = getmetatable(x)
+   if type(mt) == 'table' then
+      return callable(mt[n])
+   end
 end
 
 
@@ -288,7 +296,7 @@ local getfenv = (function(f)
             -- No need to recurse because Lua doesn't support nested functables.
             -- __call can only (sensibly) be a function, so no need to adjust
             -- stack frame offset either.
-            fn =(getmetatable(fn) or {}).__call or fn
+            fn = getmetamethod(fn, '__call') or fn
          end
 
          -- In Lua 5.1, only debug.getfenv works on C functions; but it
@@ -307,7 +315,7 @@ local getfenv = (function(f)
          if n then
             fn = debug_getinfo(n + 1, 'f').func
          elseif type(fn) ~= 'function' then
-            fn = (getmetatable(fn) or {}).__call or fn
+            fn = getmetamethod(fn, '__call') or fn
          end
 
          local name, env
@@ -353,7 +361,7 @@ local setfenv = (function(f)
             return f(n, env), nil
          end
          if type(fn) ~= 'function' then
-            fn =(getmetatable(fn) or {}).__call or fn
+            fn = getmetamethod(fn, '__call') or fn
          end
          return debug_setfenv(fn, env)
       end
@@ -369,7 +377,7 @@ local setfenv = (function(f)
             end
             fn = debug_getinfo(n, 'f').func
          elseif type(fn) ~= 'function' then
-            fn =(getmetatable(fn) or {}).__call or fn
+            fn = getmetamethod(fn, '__call') or fn
          end
 
          local up, name = 0, nil
@@ -602,7 +610,8 @@ end
 
 
 local function _type(x)
-   return (getmetatable(x) or {})._type or io_type(x) or type(x)
+   local mt = getmetatable(x)
+   return type(mt) == 'table' and mt._type or io_type(x) or type(x)
 end
 
 
@@ -778,7 +787,7 @@ local function extramsg_mismatch(i, expectedtypes, argu, key)
    if actualtype == 'string' and sub(actual, 1, 1) == ':' then
       actualtype = actual
    elseif type(actual) == 'table' then
-      if actualtype == 'table' and (getmetatable(actual) or {}).__call ~= nil then
+      if actualtype == 'table' and getmetamethod(actual, '__call') ~= nil then
          actualtype = 'functable'
       elseif next(actual) == nil then
          local matchstr = ',' .. concat(expectedtypes, ',') .. ','
@@ -842,7 +851,7 @@ local function checktype(expected, actual)
    elseif expected == 'file' and io_type(actual) == 'file' then
       return true
    elseif expected == 'functable' or expected == 'callable' or expected == 'functor' then
-      if (getmetatable(actual) or {}).__call ~= nil then
+      if getmetamethod(actual, '__call') ~= nil then
          return true
       end
    end

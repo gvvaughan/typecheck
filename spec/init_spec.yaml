@@ -731,6 +731,10 @@ specify typecheck:
         expect(fn('functable', fn)).to_raise 'functable expected, got function'
         expect(fn('function', ftable)).to_raise 'function expected, got functable'
         expect(fn('functor', fn)).to_raise 'functable expected, got function'
+    - it diagnoses a table with a protected metatable that is not a table:
+        protected = setmetatable({0}, {__metatable = true})
+        expect(fn('callable', protected)).to_raise 'callable expected, got table'
+        expect(fn('functable', protected)).to_raise 'functable expected, got table'
     - it matches types:
         expect(fn('callable', fn)).not_to_raise 'any error'
         expect(fn('callable', ftable)).not_to_raise 'any error'

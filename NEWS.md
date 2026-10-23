@@ -2,6 +2,12 @@
 
 ## Noteworthy changes in release ?.? (????-??-??) [?]
 
+### Bug fixes
+
+  - A function that argscheck wraps no longer raises an error, instead
+    of reporting a type error, for an argument whose `__metatable` field
+    is not a table, such as `true`.
+
 
 ## Noteworthy changes in release 4 (2026-10-20) [stable]
 
