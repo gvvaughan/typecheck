@@ -239,7 +239,9 @@ local checktypes = (function()
                         if #buf > 0 then
                            extramsg = concat(buf)
                         end
-                        return argerror(name, i, extramsg, 3), nil
+                        -- Tail call pessimization
+                        local r = argerror(name, i, extramsg, 3)
+                        return r
                      end
                   end
                   -- Tail call pessimisation: inner might be counting frames,
