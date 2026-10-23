@@ -8,6 +8,12 @@
     of reporting a type error, for an argument whose `__metatable` field
     is not a table, such as `true`.
 
+  - typecheck takes its `callable`, `getmetamethod`, `getfenv`,
+    `setfenv` and other core functions from `typecheck._normalize`, a
+    copy of the one file that std.normalize keeps them in, so they
+    cannot differ from std.normalize's: its `getfenv` and `setfenv` no
+    longer return a trailing `nil` on Lua 5.1.
+
 
 ## Noteworthy changes in release 4 (2026-10-20) [stable]
 

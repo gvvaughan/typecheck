@@ -12,6 +12,7 @@ ldocs    = 'build-aux/config.ld.in'
 
 modules  = {
    {['typecheck']         = 'lib/typecheck/init.lua'},
+   {['typecheck._normalize'] = 'lib/typecheck/_normalize.lua'},
    {['typecheck.version'] = 'lib/typecheck/version.lua.in'},
 }
 
