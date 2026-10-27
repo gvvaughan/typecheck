@@ -4,6 +4,11 @@
 
 ### Bug fixes
 
+  - typecheck applies strict variable declarations to its own modules
+    whenever std.strict is installed, as std.normalize does, and no
+    longer only when std._debug is installed too.  Setting the `strict`
+    hint of std._debug to false still turns them off.
+
   - A function that argscheck wraps no longer raises an error, instead
     of reporting a type error, for an argument whose `__metatable` field
     is not a table, such as `true`.

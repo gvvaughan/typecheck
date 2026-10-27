@@ -6,8 +6,8 @@
  The functions that std.normalize shares with the modules that sit
  beneath it, and so cannot depend on it.
 
- This file requires nothing, and is the same wherever it is: std.normalize
- requires it as `std.normalize._core`, and typecheck, std.strict and
+ This file requires nothing when it loads, and is the same wherever it is:
+ std.normalize requires it as `std.normalize._core`, and typecheck, std.strict and
  optparse vendor a byte for byte copy as their own `_normalize` module,
  so that there is only one copy to maintain.  Change it here, and let
  `luke release` copy it to them, rather than change a copy.
@@ -287,17 +287,74 @@ local function make_setfenv(extra)
 end
 
 
+-- The hints that std._debug holds, or if it is not installed, the
+-- defaults for all of the libraries that use this file, so that they
+-- agree: argument checking and strict variable declarations are both on,
+-- for as long as typecheck and std.strict, respectively, are installed.
+-- Installing std._debug does not change that, until a hint is set.
+local DEFAULTS = {argcheck = true, strict = true}
+local hints_cache
+
+
+local function hints()
+   if hints_cache == nil then
+      local ok, r = pcall(require, 'std._debug')
+      if not ok then
+         r = setmetatable({argcheck = true, strict = true}, {
+            -- Like std._debug: nil or true for the defaults, false for none.
+            __call = function(self, x)
+               for k, v in pairs(DEFAULTS) do
+                  self[k] = (x ~= false) and v
+               end
+               return self
+            end,
+         })
+      end
+      hints_cache = r
+   end
+   return hints_cache
+end
+
+
+-- The function that applies strict variable declarations to the
+-- environment *env* of the function *level* frames above its caller, and
+-- gives *env* back: std.strict, if it is installed and the hints want it,
+-- otherwise only a function that sets the environment, in Lua 5.1.  Ask
+-- for it once, when the library that wants it loads, and not from
+-- std.strict itself, which has a copy of this file too.
+local function strictness()
+   local setfenv = rawget(_G, 'setfenv') or function() end
+   local r = function(env, level)
+      setfenv(1 + (level or 1), env)
+      return env
+   end
+
+   if hints().strict then
+      -- Specify `.init` submodule to make sure we only accept
+      -- lua-stdlib/strict, and not the old strict module from
+      -- lua-stdlib/lua-stdlib.
+      local ok, m = pcall(require, 'std.strict.init')
+      if ok then
+         r = m
+      end
+   end
+   return r
+end
+
+
 return {
    callable = callable,
    getfenv = make_getfenv(0),
    getmetafield = getmetafield,
    getmetamethod = getmetamethod,
+   hints = hints,
    iscallable = iscallable,
    len = len,
    pack = pack,
    pairs = pairs,
    rawlen = rawlen,
    setfenv = make_setfenv(0),
+   strictness = strictness,
    tointeger = tointeger,
 
    -- The getfenv and setfenv for a function that is *extra* stack frames

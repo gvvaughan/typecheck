@@ -8,7 +8,9 @@
  The behaviour of the functions in this module are controlled by the value
  of the `argcheck` field maintained by the optional `std._debug` module.  Not
  setting a value prior to loading this module, or not installing `std._debug`
- at all, is equivalent to having `argcheck = true`.
+ at all, is equivalent to having `argcheck = true`.  Strict variable
+ declarations in this module's environment follow the `strict` field the same
+ way, for as long as `std.strict` is installed.
 
  The first line of Lua code in production quality applications that value
  execution speed over rigorous function type checking should be:
@@ -33,44 +35,12 @@
 --[[ ====================== ]]--
 
 
-local _debug = (function()
-   local ok, r = pcall(require, 'std._debug')
-   if not ok then
-      r = {
-         -- If this module was required, but there's no std._debug, safe to
-         -- assume we do want runtime argchecks!
-         argcheck = true,
-         -- But only apply strict global symbol checks when they were
-         -- requested by an installed std._debug.
-         strict = false,
-      }
-   end
+local normalize = require 'typecheck._normalize'
 
-   return r
-end)()
-
-
-local strict = (function()
-   local setfenv = rawget(_G, 'setfenv') or function() end
-
-   -- No strict global symbol checks with no std.strict module, even
-   -- if we found std._debug and requested that!
-   local r = function(env, level)
-      setfenv(1+(level or 1), env)
-      return env
-   end
-
-   if _debug.strict then
-      -- Specify `.init` submodule to make sure we only accept
-      -- lua-stdlib/strict, and not the old strict module from
-      -- lua-stdlib/lua-stdlib.
-      local ok, m = pcall(require, 'std.strict.init')
-      if ok then
-         r = m
-      end
-   end
-   return r
-end)()
+-- The hints of std._debug if it is installed, and otherwise that argument
+-- checks and strict variable declarations are on, as in every other library.
+local _debug = normalize.hints()
+local strict = normalize.strictness()
 
 
 local _ENV = strict(_G)
@@ -94,7 +64,6 @@ local remove = table.remove
 local sort = table.sort
 local sub = string.sub
 
-local normalize = require 'typecheck._normalize'
 local callable = normalize.callable
 local getfenv = normalize.getfenv
 local getmetafield = normalize.getmetafield

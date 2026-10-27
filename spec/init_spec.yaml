@@ -12,11 +12,17 @@ specify typecheck:
       expect(show_apis {added_to='_G', by=this_module}).
          to_equal {}
 
-  - it applies strict checks only with std._debug and std.strict installed: |
+  - it applies strict checks when std.strict is installed: |
       expect(luaproc [[
          require 'typecheck'
          io.write(tostring(package.loaded['std.strict.init'] ~= nil))
-      ]]).to_output(tostring(have_debug and have_strict))
+      ]]).to_output(tostring(have_strict))
+  - it applies strict checks without std._debug, when std.strict is installed: |
+      expect(luaproc [[
+         package.preload['std._debug'] = function() error('not installed', 0) end
+         require 'typecheck'
+         io.write(tostring(package.loaded['std.strict.init'] ~= nil))
+      ]]).to_output(tostring(have_strict))
   - it does not apply strict checks when the std._debug strict hint is false: |
       if have_debug then
          expect(luaproc [[
