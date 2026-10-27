@@ -17,5 +17,5 @@ specify std.version:
 - describe version:
   - it describes this module:
       expect(M).to_match '^Gradual Function Typechecks'
-  - it ends with the release number:
-      expect(M).to_match.any_of {' %d[%.%d]*$', ' dev$'}
+  - it ends with the release number or the stamp of a development build:
+      expect(M).to_match.any_of {' %d[%.%d]*$', ' [%w_.-]+/%x+$'}
