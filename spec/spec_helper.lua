@@ -18,8 +18,27 @@ local LUA = os.getenv 'LUA' or 'lua'
 
 
 -- Examples that need optional modules are skipped when not installed.
-have_debug = pcall(require, 'std._debug')
 have_strict = pcall(require, 'std.strict.init')
+
+
+-- A std._debug with the hints of the real one, which the script of every
+-- example finds first, so that the examples that set a hint run whether or
+-- not the real one is installed.  It is on the first line of the script,
+-- so that the lines of an example are the lines of its script.  The real
+-- one is specified by std._debug itself.
+local DEBUG_STUB = table.concat {
+   "package.preload['std._debug']=function()",
+   "local m='default'",
+   "local S={argcheck={default=true,safe=true,fast=false},",
+   "level={default=1,safe=1,fast=math.huge},",
+   "strict={default=true,safe=true,fast=false},",
+   "deprecate={safe=true,fast=false}}",
+   "return setmetatable({},{__call=function(s,x)",
+   "if x==true then m='safe' elseif x==false then m='fast' elseif x==nil then m='default' ",
+   "else error(\"bad argument #1 to '_debug'\",2) end return s end,",
+   "__index=function(_,k)local v=S[k] if type(v)=='table' then return v[m] end return v end})",
+   "end;",
+}
 
 
 function nop() end
@@ -90,7 +109,7 @@ end
 local function mkscript(code)
    local f = os.tmpname()
    local h = io.open(f, 'w')
-   h:write(code)
+   h:write(DEBUG_STUB, code)
    h:close()
    return f
 end
